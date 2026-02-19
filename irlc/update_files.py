@@ -58,9 +58,10 @@ try:
     import packaging
     import numpy
     import gymnasium
+    import unitgrade
 
 
-    versions = [("numpy", "2.0.1", numpy.__version__), ("gymnasium", "1.0.0", gymnasium.__version__)]
+    versions = [("numpy", "2.0.1", numpy.__version__), ("gymnasium", "1.0.0", gymnasium.__version__), ("unitgrade", "1.0.0.13", unitgrade.__version__)]
     from packaging.version import Version
 
     for package, required_version, installed_version in versions:
@@ -91,7 +92,7 @@ def read_and_extract_zip(url):
     base_dir = url.split("/main/")[-1].split(".zip")[0]
     response = requests.get(url)
     local_students_folder = os.path.dirname(os.path.dirname(__file__))
-    always_overwrite = ['irlc/update_files.py', 'irlc/__init__.py', 'irlc/tests/*', '**/unitgrade_data/*.pkl', 'irlc/car/*', 'irlc/gridworld/*', 'irlc/pacman/*', 'irlc/utils/*', '*_grade.py', '*/project*_tests.py', 'irlc/lectures/*', 'irlc/exam/*.pdf', 'irlc/exam/*.zip']
+    always_overwrite = ['requirements_pip.txt', 'environment.yml', 'irlc/update_files.py', 'irlc/__init__.py', 'irlc/tests/*', '**/unitgrade_data/*.pkl', 'irlc/car/*', 'irlc/gridworld/*', 'irlc/pacman/*', 'irlc/utils/*', '*_grade.py', '*/project*_tests.py', 'irlc/lectures/*', 'irlc/exam/*.pdf', 'irlc/exam/*.zip']
     # Check if the request was successful (status code 200)
     if response.status_code == 200:
         zip_content = BytesIO(response.content)
