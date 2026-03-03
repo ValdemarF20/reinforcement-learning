@@ -30,24 +30,99 @@ def plot_policy(pi, title, pdf):
     savepdf(pdf)
     plt.show()
 
-# TODO: 51 lines missing.
-raise NotImplementedError("Insert your solution and remove this error.")
+N_DAYS = 14   # planning horizon
+ns = 20   # max storage
+no = 15   # max order
+co = 1.5  # ordering cost per blaster
+sp = 2.1  # sale price per blaster
+c_disp = 3.0  # disposal cost per excess blaster (kiosk 2 only)
 
-def warmup_states(): 
-    # TODO: 1 lines missing.
-    raise NotImplementedError("return state set")
+# Kiosk-1 discrete demand distribution
+DEMAND_1 = {0: 0.3, 3: 0.6, 6: 0.1}
 
-def warmup_actions(): 
-    # TODO: 1 lines missing.
-    raise NotImplementedError("return action set")
 
-def solve_kiosk_1(): 
-    # TODO: 1 lines missing.
-    raise NotImplementedError("Return cost and policy here (same format as DP_stochastic)")
+class KioskModel1(DPModel):
+    """
+    State  x in {0,...,ns}  — inventory at start of day
+    Action u in {0,...,no}  — blasters ordered
+    Noise  w in {0, 3, 6}   — customer demand (Tusken-raider distribution)
 
-def solve_kiosk_2(): 
-    # TODO: 1 lines missing.
-    raise NotImplementedError("Return cost and policy here (same format as DP_stochastic)")
+    Transition:  x' = min(ns, x + u - w)   [clipped to [0, ns]]
+    Stage cost:  g  = co*u - sp*min(x+u, w)
+    Terminal:    gN = 0
+    """
+    def __init__(self):
+        super().__init__(N=N_DAYS)
+
+    def S(self, k):
+        return range(ns + 1)
+
+    def A(self, x, k):
+        return range(no + 1)
+
+    def f(self, x, u, w, k):
+        return min(ns, max(0, x + u - w))
+
+    def g(self, x, u, w, k):
+        return co * u - sp * min(x + u, w)
+
+    def gN(self, x):
+        return 0.0
+
+    def Pw(self, x, u, k):
+        return DEMAND_1
+
+
+# ── Kiosk 2 ───────────────────────────────────────────────────────────────────
+class KioskModel2(DPModel):
+    """
+    Extends KioskModel1 with:
+      - Demand ~ Binomial(ns, p=1/5)
+      - Disposal cost 3 credits/blaster for any inventory exceeding ns at end of day
+    """
+    def __init__(self):
+        super().__init__(N=N_DAYS)
+        # Cache binomial demand distribution once at construction
+        self._demand = {
+            w: float(binom.pmf(w, ns, 1/5))
+            for w in range(ns + 1)
+            if binom.pmf(w, ns, 1/5) > 1e-12
+        }
+
+    def S(self, k):
+        return range(ns + 1)
+
+    def A(self, x, k):
+        return range(no + 1)
+
+    def f(self, x, u, w, k):
+        return min(ns, max(0, x + u - w))
+
+    def g(self, x, u, w, k):
+        sold          = min(x + u, w)
+        excess        = max(0, (x + u - sold) - ns)   # blasters above storage limit
+        return co * u - sp * sold + c_disp * excess
+
+    def gN(self, x):
+        return 0.0
+
+    def Pw(self, x, u, k):
+        return self._demand
+
+# ── Warmup (Problems 2) ───────────────────────────────────────────────────────
+def warmup_states():
+    return set(range(ns + 1))          # S_0 = {0, 1, ..., 20}
+
+def warmup_actions():
+    return set(range(no + 1))          # A(x) = {0, 1, ..., 15}
+
+
+# ── Solvers (Problems 4 & 5) ──────────────────────────────────────────────────
+def solve_kiosk_1():
+    return DP_stochastic(KioskModel1())
+
+def solve_kiosk_2():
+    return DP_stochastic(KioskModel2())
 
 
 def main():

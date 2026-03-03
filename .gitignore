@@ -85,6 +85,7 @@ irlc/project0/fruit*_complete*.py
 **/unitgrade_data/
 
 venv/
+.venv/
 uv.lock
 
 *.egg-info
