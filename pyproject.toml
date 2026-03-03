@@ -1,0 +1,28 @@
+[project]
+name = "irlc"
+version = "2025.0"
+description = "Toolbox for 02465: Introduction to reinforcement learning and control"
+authors = [{ name = "Tue Herlau" }]
+requires-python = ">=3.11"
+dependencies = [
+    "gymnasium[box2d]>=1.0.0",
+    "pygame",
+    "torch",
+    "sympy",
+    "tqdm",
+    "seaborn",
+    "pillow",
+    "scikit-learn",
+    "matplotlib",
+    "requests",
+    "qtpy",
+    "numpy>=2.0.1",
+    "unitgrade",
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]

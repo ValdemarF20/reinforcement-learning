@@ -46,8 +46,59 @@ datadiscs = """
 %%%%%%%
 """
 
-# TODO: 30 lines missing.
-raise NotImplementedError("Put your own code here")
+class PacmanDPModel(DPModel):
+    """A DPModel for the Pacman environment — used for win probability computation."""
+    def __init__(self, x0, N):
+        super().__init__(N)
+        self.x0 = x0
+        self._state_spaces = get_future_states(x0, N)
+
+    def S(self, k):
+        return self._state_spaces[k]
+
+    def A(self, x, k):
+        return x.A()
+
+    def f(self, x, u, w, k):
+        # w encodes the next state directly
+        return w
+
+    def g(self, x, u, w, k):
+        return 0.0
+
+    def gN(self, x):
+        # -1 if won, so -J_pi(x0) = win probability
+        return -1.0 if x.is_won() else 0.0
+
+    def Pw(self, x, u, k):
+        return p_next(x, u)
+
+
+class PacmanShortestPathDPModel(DPModel):
+    """DPModel for shortest path: each step costs 1, terminal cost = 0 if won, large otherwise."""
+    def __init__(self, x0, N):
+        super().__init__(N)
+        self.x0 = x0
+        self._state_spaces = get_future_states(x0, N)
+
+    def S(self, k):
+        return self._state_spaces[k]
+
+    def A(self, x, k):
+        return x.A()
+
+    def f(self, x, u, w, k):
+        return w
+
+    def g(self, x, u, w, k):
+        return 0.0 if (x.is_won() or x.is_lost()) else 1.0
+
+    def gN(self, x):
+        return 0.0 if x.is_won() else 1e9
+
+    def Pw(self, x, u, k):
+        return p_next(x, u)
+
 
 def p_next(x : GameState, u: str): 
     """ Given the agent is in GameState x and takes action u, the game will transition to a new state xp.
@@ -64,9 +115,25 @@ def p_next(x : GameState, u: str):
         * The slightly tricky part is that when there are multiple ghosts, different actions by the individual ghosts may lead to the same final state
         * Check the probabilities sum to 1. This will be your main way of debugging your code and catching issues relating to the previous point.
     """
-    # TODO: 8 lines missing.
-    raise NotImplementedError("Return a dictionary {.., xp: p, ..} where xp is a possible next state and p the probability")
-    return states
+    # Start with pacman's deterministic move
+    current = {x.f(u): 1.0}
+
+    # Let each ghost take its random turn
+    num_players = x.players()
+    for ghost_idx in range(1, num_players):
+        next_states = defaultdict(float)
+        for state, prob in current.items():
+            if state.is_won() or state.is_lost():
+                next_states[state] += prob
+            else:
+                ghost_actions = state.A()
+                p_ghost = 1.0 / len(ghost_actions)
+                for ga in ghost_actions:
+                    xp = state.f(ga)
+                    next_states[xp] += prob * p_ghost
+        current = dict(next_states)
+
+    return current
 
 
 def go_east(map): 
@@ -84,28 +151,57 @@ def go_east(map):
         * Use the GymPacmanEnvironment class. The report description will contain information about how to set it up, as will pacman_demo.py
         * Use this environment to get the first GameState, then use the recommended functions to go east
     """
-    # TODO: 5 lines missing.
-    raise NotImplementedError("Return the list of states pacman will traverse if he goes east until he wins the map")
+    env = PacmanEnvironment(layout_str=map)
+    x, _ = env.reset()
+    states = [x]
+    while not x.is_won():
+        x = x.f('East')
+        states.append(x)
     return states
 
 def get_future_states(x, N): 
-    # TODO: 4 lines missing.
-    raise NotImplementedError("return a list-of-list of future states [S_0, ... ,S_N]. Each S_k is a state space, i.e. a list of GameState objects.")
+    state_spaces = [[x]]
+    for k in range(N):
+        next_set = {}
+        for state in state_spaces[k]:
+            for action in state.A():
+                for xp in p_next(state, action).keys():
+                    if xp not in next_set:
+                        next_set[xp] = xp
+        state_spaces.append(list(next_set.values()))
     return state_spaces
 
 def win_probability(map, N=10): 
     """ Assuming you get a reward of -1 on wining (and otherwise zero), the win probability is -J_pi(x_0). """
-    # TODO: 5 lines missing.
-    raise NotImplementedError("Return the chance of winning the given map within N steps or less.")
-    return win_probability
+    x0, _ = PacmanEnvironment(layout_str=map).reset()
+    model = PacmanDPModel(x0, N)
+    J, pi = DP_stochastic(model)
+    return -J[0][x0]
 
 def shortest_path(map, N=10): 
     """ If each move has a cost of 1, the shortest path is the path with the lowest cost.
     The actions should be the list of actions taken.
     The states should be a list of states the agent visit. The first should be the initial state and the last
     should be the won state. """
-    # TODO: 4 lines missing.
-    raise NotImplementedError("Return the cost of the shortest path, the list of actions taken, and the list of states.")
+    x0, _ = PacmanEnvironment(layout_str=map).reset()
+    model = PacmanShortestPathDPModel(x0, N)
+    J, pi = DP_stochastic(model)
+    # Reconstruct path by following policy
+    actions = []
+    states = [x0]
+    x = x0
+    for k in range(N):
+        if x.is_won() or x.is_lost():
+            break
+        u = pi[k][x]
+        actions.append(u)
+        # Deterministic: take the action and pick the most likely next state (no ghost case),
+        # or just follow the policy state transitions
+        xp_dict = p_next(x, u)
+        # Pick next state according to the policy (in deterministic case, there is only one)
+        # Follow by picking the argmax probability state
+        x = max(xp_dict, key=xp_dict.get)
+        states.append(x)
     return actions, states
 
 

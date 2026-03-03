@@ -81,3 +81,9 @@ irlc/project0/fruit*_complete*.py
 **/__pycache__/*
 .vscode/
 .idea/
+
+**/unitgrade_data/
+
+uv.lock
+
+*.egg-info

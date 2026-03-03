@@ -1,10 +1,5 @@
-from setuptools import find_packages, setup
+# This file is kept for backward compatibility.
+# All project metadata and dependencies are now defined in pyproject.toml.
+from setuptools import setup
 
-setup(
-    name="irlc",
-    packages=find_packages(),
-    version="2025.0",
-    description="Toolbox for 02465: Introduction to reinforcement learning and control",
-    author="Tue Herlau",
-    license="See information on DTU Learn.",
-)
+setup()
