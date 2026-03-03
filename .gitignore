@@ -79,3 +79,5 @@ irlc/exam/exam2025*/*.pdf
 irlc/project0/fruit*_complete*.py
 *tests_complete_grade*.py
 **/__pycache__/*
+.vscode/
+.idea/
