@@ -18,6 +18,7 @@ dependencies = [
     "qtpy",
     "numpy>=2.0.1",
     "unitgrade",
+    "pdf2image>=1.17.0",
 ]
 
 [build-system]
