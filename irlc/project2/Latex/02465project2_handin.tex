@@ -72,46 +72,201 @@ Headings have been inserted in the document for readability. You only have to ed
 \subsubsection*{{\color{red}Problem 1:  Formulate Yodas pendulum as a linear problem}}
 	
 	\begin{align}
-		A & = \begin{bmatrix} \cdots \end{bmatrix}  \\
-		B & = \begin{bmatrix} \cdots \end{bmatrix}
+		A & = \begin{bmatrix} 0 & 1 \\ -\frac{g}{L} & 0 \end{bmatrix}  \\
+		B & = \begin{bmatrix} 0 \\ \frac{1}{mL^2}\end{bmatrix}
 	\end{align}
-	\yoursolution 	
 	
 \subsubsection*{{\color{red}Problem 2:  State at a later time}}
-	
-		To solve the first part, we can write $\m x_N = \begin{bmatrix} \cdots \end{bmatrix}$
-		
-		As for the second part we get:
+
+To solve the first part, we begin with the discretized system where $B = \mathbf{u} = 0$,
+so $\dot{x} = Ax$. For Euler discretization, we approximate $\dot{x} \approx
+\frac{x_{n+1} - x_n}{\Delta}$, which gives:
 \begin{align}
-\tilde A_0 & = \begin{bmatrix} \cdots \end{bmatrix}, \quad A_0 = \begin{bmatrix} \cdots \end{bmatrix}
+    \frac{x_{n+1} - x_n}{\Delta} = Ax_n \implies x_{n+1} = (I + \Delta A)x_n = \tilde{A}_0 x_n
 \end{align}
-		\yoursolution 	
-\subsubsection*{{\color{red}Problem 4:  Eigenvalues and powers}}
+Applying this recursively from $x_0$:
+\begin{align}
+    x_1 &= \tilde{A}_0 x_0 \notag \\
+    x_2 &= \tilde{A}_0 x_1 = \tilde{A}_0^2 x_0 \notag \\
+    &\vdots \notag \\
+    x_N &= \tilde{A}_0^N x_0
+\end{align}
+For exponential discretization, the exact solution to $\dot{x} = Ax$ is
+$x(t) = e^{At}x_0$. Evaluating at $t = \Delta$ gives $x_1 = e^{A\Delta}x_0 = A_0 x_0$.
+Applying this recursively:
+\begin{align}
+    x_1 &= A_0 x_0 \notag \\
+    x_2 &= A_0 x_1 = A_0^2 x_0 \notag \\
+    &\vdots \notag \\
+    x_N &= A_0^N x_0
+\end{align}
+We can therefore write $x_N = \begin{bmatrix} \tilde{A}_0^N \end{bmatrix} x_0$ and
+$x_N = \begin{bmatrix} A_0^N \end{bmatrix} x_0$ for Euler and exponential discretization
+respectively.
+
+As for the second part we get:
+\begin{align}
+\tilde A_0 & = I + \Delta A = \begin{bmatrix} 1 & \Delta \\ -\dfrac{g}{L}\Delta & 1 \end{bmatrix}, \quad A_0 = e^{A\Delta} = \text{expm}\!\left(\begin{bmatrix} 0 & \Delta \\ -\dfrac{g}{L}\Delta & 0 \end{bmatrix}\right)
+\end{align}
+where $\tilde{A}_0$ follows directly from $I + \Delta A$ with $A = \begin{bmatrix} 0 & 1
+\\ -g/L & 0 \end{bmatrix}$, and $A_0$ is computed using the matrix exponential.
+
+\subsubsection*{{\color{red}Problem 4: Eigenvalues and powers}}
+
+Assume $\lambda_1, \lambda_2$ are the eigenvalues of $\tilde{A}_0$, then by the
+Eigendecomposition we can write:
+\begin{align}
+    \tilde{A}_0 = Q\Sigma Q^{-1}, \quad \text{where } \Sigma = \begin{bmatrix} \lambda_1 & 0 \\ 0 & \lambda_2 \end{bmatrix}
+\end{align}
+We now consider $M = \tilde{A}_0^N$. Using the Eigendecomposition, we expand the power:
+\begin{align}
+    M = \tilde{A}_0^N = (Q\Sigma Q^{-1})^N
+\end{align}
+Writing out the multiplication explicitly:
+\begin{align}
+    (Q\Sigma Q^{-1})^N &= (Q\Sigma Q^{-1})(Q\Sigma Q^{-1})\cdots(Q\Sigma Q^{-1}) \notag \\
+    &= Q\Sigma (Q^{-1}Q)\Sigma (Q^{-1}Q)\cdots\Sigma Q^{-1} \notag \\
+    &= Q\Sigma^N Q^{-1}
+\end{align}
+where we used that $Q^{-1}Q = I$, which cancels all interior terms. Since $\Sigma$ is
+diagonal, its $N$-th power is simply:
+\begin{align}
+    \Sigma^N = \begin{bmatrix} \lambda_1 & 0 \\ 0 & \lambda_2 \end{bmatrix}^N = \begin{bmatrix} \lambda_1^N & 0 \\ 0 & \lambda_2^N \end{bmatrix}
+\end{align}
+Therefore:
+\begin{align}
+    M = \tilde{A}_0^N = Q \begin{bmatrix} \lambda_1^N & 0 \\ 0 & \lambda_2^N \end{bmatrix} Q^{-1}
+\end{align}
+Since $M = Q\Sigma^N Q^{-1}$ is itself an Eigendecomposition, the eigenvalues of $M$
+are the diagonal entries of $\Sigma^N$, namely $\lambda_1^N$ and $\lambda_2^N$.
+The result is therefore very simple: \textbf{if $\lambda_1, \lambda_2$ are the
+eigenvalues of $\tilde{A}_0$, then the eigenvalues of $M = \tilde{A}_0^N$ are
+$\lambda_1^N$ and $\lambda_2^N$}.
 	
-Assume $\lambda_1, \lambda_2$ are the eigenvalues ... then the Eigenvalues of $M$ is ... similarly for $\tilde M$ ... 
-\yoursolution
-	
-\subsubsection*{{\color{red}Problem 5:  Analytical expression of Eigenvalues using Euler discretization}}
+\subsubsection*{{\color{red}Problem 5: Analytical expression of Eigenvalues using Euler discretization}}
 
-... we get a characteristic polynomial of ... and therefore it follows from Mat1 that the two Eigenvalues are ... 
-\yoursolution
+To find the eigenvalues of $\tilde{A}_0$, we solve $\det(\tilde{A}_0 - \lambda I) = 0$.
+Recall that:
+\begin{align}
+    \tilde{A}_0 = \begin{bmatrix} 1 & \Delta \\ -\dfrac{g}{L}\Delta & 1 \end{bmatrix}
+\end{align}
+We get a characteristic polynomial of:
+\begin{align}
+    \det(\tilde{A}_0 - \lambda I) &= \det\begin{bmatrix} 1-\lambda & \Delta \\ -\dfrac{g}{L}\Delta & 1-\lambda \end{bmatrix} \notag \\
+    &= (1-\lambda)^2 + \frac{g}{L}\Delta^2 = 0
+\end{align}
+Rearranging:
+\begin{align}
+    (1-\lambda)^2 = -\frac{g}{L}\Delta^2
+\end{align}
+and therefore it follows from Mat1 that the two eigenvalues are:
+\begin{align}
+    \lambda_{1,2} = 1 \pm \Delta\sqrt{-\frac{g}{L}} = 1 \pm i\Delta\sqrt{\frac{g}{L}}
+\end{align}
+The eigenvalues are thus a complex conjugate pair.
 
-\subsubsection*{{\color{red}Problem 6:  Bound using Euler discretization}}
+\subsubsection*{{\color{red}Problem 6: Bound using Euler discretization}}
 
-	Using Euler discretization we get the upper bound:
-	$$
-\| \m x_N \| \leq \cdots
+Using Euler discretization we have $x_N = \tilde{A}_0^N x_0$. Taking the norm and
+using the submultiplicative property of the matrix norm:
+\begin{align}
+    \|x_N\| = \|\tilde{A}_0^N x_0\| \leq \|\tilde{A}_0^N\| \|x_0\| = \|\tilde{A}_0^N\|
+\end{align}
+where we used $\|x_0\| = 1$. From Problem 4 we know the eigenvalues of $\tilde{A}_0^N$
+are $\lambda_1^N$ and $\lambda_2^N$, so by equation (12):
+\begin{align}
+    \|\tilde{A}_0^N\| = \max\{|\lambda_1^N|, |\lambda_2^N|\} = \max\{|\lambda_1|^N, |\lambda_2|^N\}
+\end{align}
+From Problem 5 we found $\lambda_{1,2} = 1 \pm i\Delta\sqrt{g/L}$, and since they are
+a complex conjugate pair $|\lambda_1| = |\lambda_2|$. The absolute value of a complex
+number $a + bi$ is $\sqrt{a^2 + b^2}$, so:
+\begin{align}
+    |\lambda_{1,2}| = \sqrt{1 + \frac{g}{L}\Delta^2}
+\end{align}
+Using Euler discretization we therefore get the upper bound:
 $$
-\yoursolution
-	
-\subsubsection*{{\color{red}Problem 7:  Matrix norm of Exponential discretization (harder)}}
-	
-Using exponential discretization we get an upper bound of:
-		$$
-		\| \m x_N \| \leq \cdots
-		$$
-		\yoursolution
-	
+    \|x_N\| \leq \left(1 + \frac{g}{L}\Delta^2\right)^{N/2}
+$$
+This bound is tight since both eigenvalues have equal absolute value. Note that since
+$1 + \frac{g}{L}\Delta^2 > 1$ for any $\Delta > 0$, the bound grows with $N$,
+confirming that Euler discretization is numerically unstable for this system.
+
+\subsubsection*{{\color{red}Problem 7: Matrix norm of Exponential discretization (harder)}}
+
+Following the same steps as Problem 6, we start from $x_N = A_0^N x_0$ and use
+$\|x_0\| = 1$:
+\begin{align}
+    \|x_N\| = \|A_0^N x_0\| \leq \|A_0^N\| \|x_0\| = \|A_0^N\|
+\end{align}
+We need the eigenvalues of $A_0^N = (e^{A\Delta})^N$. To find the eigenvalues of
+$e^{A\Delta}$, we use the Eigendecomposition $A = Q\Sigma Q^{-1}$ and the Taylor
+series definition of the matrix exponential:
+\begin{align}
+    e^{A\Delta} = \sum_{k=0}^{\infty} \frac{(A\Delta)^k}{k!} = \sum_{k=0}^{\infty} \frac{(Q\Sigma Q^{-1}\Delta)^k}{k!} = \sum_{k=0}^{\infty} \frac{Q(\Sigma\Delta)^k Q^{-1}}{k!}
+\end{align}
+Factoring out $Q$ and $Q^{-1}$:
+\begin{align}
+    e^{A\Delta} = Q\left(\sum_{k=0}^{\infty} \frac{(\Sigma\Delta)^k}{k!}\right)Q^{-1} = Q\, e^{\Sigma\Delta}\, Q^{-1}
+\end{align}
+Since $\Sigma = \begin{bmatrix} \mu_1 & 0 \\ 0 & \mu_2 \end{bmatrix}$ is diagonal, its
+matrix exponential is simply:
+\begin{align}
+    e^{\Sigma\Delta} = \begin{bmatrix} e^{\mu_1\Delta} & 0 \\ 0 & e^{\mu_2\Delta} \end{bmatrix}
+\end{align}
+This is itself an Eigendecomposition, so the eigenvalues of $A_0 = e^{A\Delta}$ are
+$e^{\mu_1\Delta}$ and $e^{\mu_2\Delta}$, where $\mu_1, \mu_2$ are the eigenvalues of
+$A$. The eigenvalues of $A = \begin{bmatrix} 0 & 1 \\ -g/L & 0 \end{bmatrix}$ follow
+from $\det(A - \mu I) = 0$:
+\begin{align}
+    \mu^2 + \frac{g}{L} = 0 \implies \mu_{1,2} = \pm i\sqrt{\frac{g}{L}}
+\end{align}
+So the eigenvalues of $A_0$ are $e^{\pm i\Delta\sqrt{g/L}}$, which are complex
+conjugates with absolute value:
+\begin{align}
+    |e^{\pm i\Delta\sqrt{g/L}}| = 1
+\end{align}
+since $|e^{i\phi}| = 1$ for any real $\phi$ (Euler's formula: $e^{i\phi} = \cos\phi +
+i\sin\phi$). From Problem 4, the eigenvalues of $A_0^N$ are then $e^{\pm
+iN\Delta\sqrt{g/L}}$, which also have absolute value 1. Therefore by equation (12):
+\begin{align}
+    \|A_0^N\| = \max\{|e^{iN\Delta\sqrt{g/L}}|, |e^{-iN\Delta\sqrt{g/L}}|\} = 1
+\end{align}
+Using exponential discretization we therefore get the tight upper bound:
+$$
+    \|x_N\| \leq 1
+$$
+This result is remarkably simple and confirms that exponential discretization is
+numerically stable: the norm of the state never grows beyond its initial
+value, for any $\Delta > 0$ and any $N$.
+
+\subsubsection*{{\color{red}Problem 8: Stability}}
+
+From Problems 6 and 7 we derived the following bounds:
+\begin{align}
+    \text{Euler:} \quad &\|x_N\| \leq \left(1 + \frac{g}{L}\Delta^2\right)^{N/2} \\
+    \text{Exponential:} \quad &\|x_N\| \leq 1
+\end{align}
+For Euler discretization, since $\frac{g}{L}\Delta^2 > 0$ for any $\Delta > 0$,
+we have $1 + \frac{g}{L}\Delta^2 > 1$, and therefore the bound grows without bound as
+$N \to \infty$:
+\begin{align}
+    \left(1 + \frac{g}{L}\Delta^2\right)^{N/2} \to \infty \quad \text{as } N \to \infty
+\end{align}
+This means the numerical solution is not guaranteed to stay bounded, regardless of
+how small the time step $\Delta$ is chosen. Euler discretization is therefore
+numerically unstable for this system.
+
+For exponential discretization, the bound $\|x_N\| \leq 1$ holds for all
+$N$ and all $\Delta > 0$. Since $\|x_0\| = 1$, the norm of the state never exceeds
+its initial value, meaning the solution remains bounded for all time. Exponential
+discretization is therefore numerically stable.
+
+This difference in stability has a physical interpretation: the pendulum is a
+system with no energy dissipation, so the true solution should neither
+grow nor decay. The exponential discretization respects this property exactly, while
+the Euler discretization introduces a growth that causes the solution to
+break over time.
+
 \section{R2D2 and control (\texttt{r2d2.py})}
 \subsubsection*{{\color{red}Problem 9:  Discretization}}
 
