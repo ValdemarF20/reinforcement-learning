@@ -96,8 +96,8 @@ def LQR(A : list,  # Dynamic
     Except that since x_N is no longer discrete, we store it as matrices/vectors representing a second-order polynomial, i.e.    
     > J_N(X_N) = 1/2 * x_N' V[N] x_N + v[N]' x_N + vc[N]
     """
-    # TODO: 1 lines missing.
-    raise NotImplementedError("Initialize V[N], v[N], vc[N] here")
+
+    V[N], v[N], vc[N] = QN, qN, qcN
 
     In = np.eye(n)
     for k in range(N-1,-1,-1):
@@ -116,13 +116,10 @@ def LQR(A : list,  # Dynamic
         # V[k] = ...
         # v[k] = ...
         # vc[k] = ...
-        ## TODO: Half of each line of code in the following 4 lines have been replaced by garbage. Make it work and remove the error.
-        #----------------------------------------------------------------------------------------------------------------------------
-        # Suu = R[k] + B[k].T @ (????????????????????????
-        # Sux = H[k] + B[k].T @ (????????????????????????
-        # Su = r[k] + B[k].T @ v[k + 1?????????????????????????????
-        # L[k] = -np.linal?????????????????
-        raise NotImplementedError("Insert your solution and remove this error.")
+        Suu = R[k] + B[k].T @ (V[k+1] + mu * In) @ B[k]
+        Sux = H[k] + B[k].T @ (V[k+1] + mu * In) @ A[k]
+        Su = r[k] + B[k].T @ (v[k+1] + (V[k+1] + mu * In) @ d[k])
+        L[k] = -np.linalg.solve(Suu, Sux)
         l[k] = -np.linalg.solve(Suu, Su) # You get this for free. Notice how we use np.lingalg.solve(A,x) to compute A^{-1} x
         V[k] = Q[k] + A[k].T @ V[k+1] @ A[k] - L[k].T @ Suu @ L[k]
         V[k] = 0.5 * (V[k] + V[k].T)  # I recommend putting this here to keep V positive semidefinite

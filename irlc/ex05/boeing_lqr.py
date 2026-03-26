@@ -13,28 +13,26 @@ from irlc.ex05.lqr_agent import LQRAgent
 from irlc.ex03.control_model import ControlModel
 import scipy
 
+from solutions.ex05.boeing_lqr_TODO_4 import B_discrete
+
 
 def boeing_simulation():
     env = BoeingEnvironment(Tmax=10)
     model = env.discrete_model.continuous_model # get the model from the Boeing environment
     dt = env.dt # Get the discretization time.
     A, B, d = compute_A_B_d(model, dt)
-    # Use compute_Q_R_q to get the Q, R, and q matrices in the discretized system
-    # TODO: 1 lines missing.
-    raise NotImplementedError("Compute Q, R and q here")
-    ## TODO: Half of each line of code in the following 1 lines have been replaced by garbage. Make it work and remove the error.
-    #----------------------------------------------------------------------------------------------------------------------------
-    # agent = LQRAgent(env, A=A??????????????????????????
-    raise NotImplementedError("Use your LQRAgent to plan using the system matrices.")
+    Q, R, q = compute_Q_R_q(model, dt)
+    agent = LQRAgent(env, A=A, B=B, Q=Q, R=R, q=q, d=d)
     stats, trajectories = train(env, agent, return_trajectory=True)
     return stats, trajectories, env
 
 def compute_Q_R_q(model : ControlModel, dt : float):
     cost = model.get_cost() # Get the continuous-time cost-function
-    # use print(cost) to see what it contains.
+    print(cost)
     # Then get the discretized matrices using the techniques described in (Her25, Subsection 13.1.6).
-    # TODO: 3 lines missing.
-    raise NotImplementedError("Insert your solution and remove this error.")
+    Q = cost.Q * dt
+    R = cost.R * dt
+    q = cost.q * dt
     return Q, R, q
 
 def compute_A_B_d(model : ControlModel, dt : float):
@@ -45,8 +43,10 @@ def compute_A_B_d(model : ControlModel, dt : float):
 
     A_discrete = scipy.linalg.expm(model.A * dt)  # This is the discrete A-matrix computed using the matrix exponential
     # Now it is your job to define B_discrete and d_discrete.
-    # TODO: 2 lines missing.
-    raise NotImplementedError("Insert your solution and remove this error.")
+    # Hint: You can use the formula from (Her25, Subsection 13.1.6) to compute these matrices. This formula involves solving a linear system of equations, which can be done using np.linalg.solve.
+    A_tilde = model.A - 1e-6 * np.eye(model.state_size) # Add a small regularization term to ensure A is invertible (otherwise it breaks if rows of A are not linearly independent).
+    B_discrete = np.linalg.solve(A_tilde, (A_discrete - np.eye(model.state_size))) @ model.B
+    d_discrete = np.linalg.solve(A_tilde, (A_discrete - np.eye(model.state_size))) @ d
     return A_discrete, B_discrete, d_discrete.flatten()
 
 def boeing_experiment():
