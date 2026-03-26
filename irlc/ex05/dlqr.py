@@ -96,7 +96,6 @@ def LQR(A : list,  # Dynamic
     Except that since x_N is no longer discrete, we store it as matrices/vectors representing a second-order polynomial, i.e.    
     > J_N(X_N) = 1/2 * x_N' V[N] x_N + v[N]' x_N + vc[N]
     """
-
     V[N], v[N], vc[N] = QN, qN, qcN
 
     In = np.eye(n)
