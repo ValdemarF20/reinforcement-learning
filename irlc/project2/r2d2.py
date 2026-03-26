@@ -9,6 +9,7 @@ from irlc.ex04.discrete_control_model import DiscreteControlModel
 from irlc.ex04.control_environment import ControlEnvironment
 from irlc.ex03.control_model import ControlModel
 from irlc.ex03.control_cost import SymbolicQRCost
+from irlc.ex05.dlqr import LQR
 from irlc.ex06.linearization_agent import LinearizationAgent
 from irlc.project2.utils import R2D2Viewer
 from irlc import Agent, train, plot_trajectory, savepdf
@@ -38,8 +39,10 @@ class R2D2Model(ControlModel): # This may help you get started.
     def x0_bound(self) -> Box:
         return Box(0, 0, shape=(self.state_size,))
 
-    # TODO: 3 lines missing.
-    raise NotImplementedError("Complete model dynamics here.")
+    def sym_f(self, x, u, t=None):
+        return [u[0] * sym.cos(x[2]),
+                u[0] * sym.sin(x[2]),
+                u[1]]
 
     """The following two methods allows the environment to be rendered as in:
     
@@ -66,15 +69,13 @@ class R2D2Environment(ControlEnvironment):
         dmodel = DiscreteControlModel(model, dt=dt)   # Create a discrete version of the R2D2 ControlModel
         super().__init__(dmodel, Tmax=Tmax, render_mode=render_mode)
 
-# TODO: 9 lines missing.
-raise NotImplementedError("Your code here.")
-
-def f_euler(x : np.ndarray, u : np.ndarray, Delta=0.05) -> np.ndarray: 
+def f_euler(x : np.ndarray, u : np.ndarray, Delta=0.05) -> np.ndarray:
     """ Solve Problem 9. The function should compute
     > x_next = f_k(x, u)
     """
-    # TODO: 1 lines missing.
-    raise NotImplementedError("return next state")
+    x_next = x + Delta * np.array([u[0] * np.cos(x[2]),
+                                    u[0] * np.sin(x[2]),
+                                    u[1]])
     return x_next
 
 def linearize(x_bar, u_bar, Delta=0.05):
@@ -85,12 +86,16 @@ def linearize(x_bar, u_bar, Delta=0.05):
 
     The function should return linearization matrices A, B and d.
     """
-    # Create A, B, d as numpy ndarrays.
-    # TODO: 4 lines missing.
-    raise NotImplementedError("Insert your solution and remove this error.")
+    A = np.eye(3)
+    A[0, 2] = -Delta * u_bar[0] * np.sin(x_bar[2])
+    A[1, 2] =  Delta * u_bar[0] * np.cos(x_bar[2])
+    B = np.array([[Delta * np.cos(x_bar[2]), 0],
+                  [Delta * np.sin(x_bar[2]), 0],
+                  [0,                        Delta]])
+    d = f_euler(x_bar, u_bar, Delta) - A @ x_bar - B @ u_bar
     return A, B, d
 
-def drive_to_linearization(x_target, plot=True): 
+def drive_to_linearization(x_target, plot=True):
     """
     Plan in a R2D2 model with specific value of x_target (in the cost function).
 
@@ -106,12 +111,17 @@ def drive_to_linearization(x_target, plot=True):
     Hints:
         * The control method is identical to one we have seen in the exercises/notes. You can re-purpose the code from that week.
     """
-    # TODO: 7 lines missing.
-    raise NotImplementedError("Implement function body")
+    env = R2D2Environment(x_target=x_target, dt=dt)
+    xbar = np.zeros(env.discrete_model.state_size)
+    ubar = np.zeros(env.discrete_model.action_size)
+    agent = LinearizationAgent(env, model=env.discrete_model, xbar=xbar, ubar=ubar)
+    _, traj = train(env, agent, num_episodes=1, return_trajectory=True)
+    if plot:
+        plot_trajectory(traj[0], env)
     return traj[0].state
 
 
-def drive_to_mpc(x_target, plot=True) -> np.ndarray: 
+def drive_to_mpc(x_target, plot=True) -> np.ndarray:
     """
     Plan in a R2D2 model with specific value of x_target (in the cost function) using iterative MPC (see problem text).
 
@@ -128,36 +138,72 @@ def drive_to_mpc(x_target, plot=True) -> np.ndarray:
        by the linearization agent.
      * My approach was to implement a variant of the LinearizationAgent.
     """
-    # TODO: 6 lines missing.
-    raise NotImplementedError("Implement function body")
+    env = R2D2Environment(x_target=x_target, dt=dt)
+    model = env.discrete_model
+    N = 50
+
+    class IterativeMPCAgent(Agent):
+        def __init__(self_agent, env):
+            self_agent.last_u = np.zeros(model.action_size)
+            super().__init__(env)
+
+        def pi(self_agent, x, k, info=None):
+            ubar = self_agent.last_u
+            Jx, Ju = model.f_jacobian(x, ubar)
+            d_vec = np.asarray(model.f(x, ubar)).flatten() - Jx @ x - Ju @ ubar
+            cost = model.cost
+            (L, l), _ = LQR(A=[Jx]*N, B=[Ju]*N, d=[d_vec]*N,
+                             Q=[cost.Q]*N, R=[cost.R]*N, q=[cost.q]*N,
+                             QN=cost.QN, qN=cost.qN)
+            u = L[0] @ x + l[0]
+            self_agent.last_u = u
+            return u
+
+    agent = IterativeMPCAgent(env)
+    _, traj = train(env, agent, num_episodes=1, return_trajectory=True)
+    if plot:
+        plot_trajectory(traj[0], env)
     return traj[0].state
 
 if __name__ == "__main__":
     r2d2 = R2D2Model()
     print(r2d2) # This will print out details of your R2D2 model.
 
-    # Check Problem 10
-    x = np.asarray( [0, 0, 0] )
-    u = np.asarray( [1,0])
-    print("x_k =", x, "u_k =", u, "x_{k+1} =", f_euler(x, u, dt))
+    # Problem 9: Euler discretization
+    print("=" * 50)
+    print("Problem 9: Euler discretization f_euler")
+    x = np.asarray([0, 0, 0])
+    u = np.asarray([1, 0])
+    print(f"  x_k = {x}, u_k = {u}")
+    print(f"  x_{{k+1}} = f_euler(x, u, dt={dt}) = {f_euler(x, u, dt)}")
 
-    A,B,d = linearize(x_bar=x, u_bar=u, Delta=dt)
-    print("x_{k+1} ~ A x_k + B u_k + d")
-    print("A:", A)
-    print("B:", B)
-    print("d:", d)
+    # Problem 10: Linearization
+    print("=" * 50)
+    print("Problem 10: Linearization around x_bar, u_bar")
+    A, B, d = linearize(x_bar=x, u_bar=u, Delta=dt)
+    print(f"  x_{{k+1}} ~ A x_k + B u_k + d")
+    print(f"  A =\n{A}")
+    print(f"  B =\n{B}")
+    print(f"  d = {d}")
 
-    # Test the simple linearization method (Problem 12)
-    drive_to_linearization((2,0,0), plot=True)
+    # Problem 12: Drive to target using linearization
+    print("=" * 50)
+    print("Problem 12: Drive to (2,0,0) using linearization")
+    states_lin1 = drive_to_linearization((2, 0, 0), plot=True)
+    print(f"  Final state: {states_lin1[-1]}")
     savepdf('r2d2_linearization_1')
     plt.show()
 
-    drive_to_linearization(x22, plot=True)
+    print("Problem 12: Drive to x22=(2,2,pi/2) using linearization")
+    states_lin2 = drive_to_linearization(x22, plot=True)
+    print(f"  Final state: {states_lin2[-1]}")
     savepdf('r2d2_linearization_2')
     plt.show()
 
-    # Test iterative LQR (Problem 13)
-    state = drive_to_mpc(x22, plot=True)
-    print(state[-1])
+    # Problem 13: Drive to target using iterative MPC
+    print("=" * 50)
+    print("Problem 13: Drive to x22=(2,2,pi/2) using iterative MPC")
+    states_mpc = drive_to_mpc(x22, plot=True)
+    print(f"  Final state: {states_mpc[-1]}")
     savepdf('r2d2_iterative_1')
     plt.show()
