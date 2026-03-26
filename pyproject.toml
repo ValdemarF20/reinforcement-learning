@@ -17,8 +17,9 @@ dependencies = [
     "requests",
     "qtpy",
     "numpy>=2.0.1",
-    "unitgrade",
+    "unitgrade>=1.0.0.13",
     "pdf2image>=1.17.0",
+    "pyfiglet>=1.0.4",
 ]
 
 [build-system]
