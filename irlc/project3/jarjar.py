@@ -5,8 +5,7 @@ import numpy as np
 
 def pi_optimal(s : int) -> int: 
     """ Compute the optimal policy for Jar-Jar binks. Don't overthink this one! """
-    # TODO: 1 lines missing.
-    raise NotImplementedError("Return the optimal action in state s.")
+    action = -1 if s > 0 else 1
     return action
 
 def Q0_approximate(gamma : float, N : int) -> float: 
