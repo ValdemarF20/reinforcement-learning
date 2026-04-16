@@ -1,8 +1,7 @@
 # This file may not be shared/redistributed without permission. Please read copyright notice in the git repo. If this file contains other copyright notices disregard this text.
-from irlc.lectures.lec10.lecture_10_mc_q_estimation import keyboard_play
 from irlc.gridworld.gridworld_environments import SuttonCornerGridEnvironment, BookGridEnvironment
 from irlc.ex09.mc_agent import MCAgent
-from irlc.lectures.lec10.lecture_10_mc_action_value_first_one_state import MCControlAgentOneState
+from irlc.lectures.lec09.lecture_10_mc_action_value_first_one_state import MCControlAgentOneState
 from irlc.ex09.mc_evaluate import MCEvaluationAgent
 import numpy as np
 from irlc import interactive, train

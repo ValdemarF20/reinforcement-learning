@@ -64,7 +64,7 @@ class SarsaDelayNAgent(QAgent):
         return f"SarsaN_{self.gamma}_{self.epsilon}_{self.alpha}_{self.n}"
 
 
-from irlc.lectures.lec11.lecture_10_sarsa_open import open_play
+from irlc.lectures.lec10.lecture_10_sarsa_open import open_play
 if __name__ == "__main__":
     n = 8
     env = OpenGridEnvironment()

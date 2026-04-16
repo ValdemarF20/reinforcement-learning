@@ -10,6 +10,14 @@ def keyboard_play(env, agent, method_label='MC',autoplay=False, num_episodes=100
     train(env, agent, num_episodes=num_episodes)
     env.close()
 
+def automatic_play_value(env, agent, method_label='MC'):
+    agent.label = method_label
+    env, agent = interactive(env, agent)
+
+    # env = VideoMonitor(env, agent=agent, fps=40, continious_recording=True, agent_monitor_keys=('v'), render_kwargs={'method_label': method_label})
+    # agent = PlayWrapper(agent, env)
+    train(env, agent, num_episodes=1000)
+    env.close()
 
 if __name__ == "__main__":
     env = BookGridEnvironment(render_mode='human', zoom=2, living_reward=-0.05)
