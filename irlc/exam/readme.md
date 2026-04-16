@@ -9,7 +9,7 @@ During the exam:
    - For the midterm, you can find the file on DTU Learn
  - The `zip` file will contain the toolbox code including solutions. It will also contain a directory:
     ```bash
-    irlc/exam/exam2025spring
+    irlc/exam/exam2026spring
     ```
  - This directory contains the code you need to work on for the exam. Replace the directory on your local computer with this directory and you should be all set up
  - The `.zip` file will also contain solutions to nearly all exercises. Use these if benefits you.
