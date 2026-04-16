@@ -2,7 +2,7 @@
 from irlc.gridworld.gridworld_environments import OpenGridEnvironment
 from irlc import train
 from irlc.lectures.lec11.lecture_10_sarsa_open import open_play
-from irlc.lectures.lec11.sarsa_nstep_delay import SarsaDelayNAgent
+from irlc.lectures.lec10.sarsa_nstep_delay import SarsaDelayNAgent
 
 if __name__ == "__main__":
     n = 8

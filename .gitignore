@@ -5,11 +5,11 @@
 #solutions/ex03
 #solutions/ex04
 #solutions/ex05
-solutions/ex06
-solutions/ex07
-solutions/ex08
-solutions/ex09
-solutions/ex10
+#solutions/ex06
+#solutions/ex07
+#solutions/ex08
+#solutions/ex09
+#solutions/ex10
 solutions/ex11
 solutions/ex12
 solutions/ex13
@@ -18,10 +18,10 @@ solutions/ex13
 #irlc/ex04
 #irlc/ex05
 #irlc/ex06
-irlc/ex07
-irlc/ex08
-irlc/ex09
-irlc/ex10
+#irlc/ex07
+#irlc/ex08
+#irlc/ex09
+#irlc/ex10
 irlc/ex11
 irlc/ex12
 irlc/ex13
@@ -32,29 +32,28 @@ irlc/ex13
 #irlc/tests/tests_week04.py
 #irlc/tests/tests_week05.py
 #irlc/tests/tests_week06.py
-irlc/tests/tests_week07.py
-irlc/tests/tests_week08.py
-irlc/tests/tests_week09.py
-irlc/tests/tests_week10.py
+#irlc/tests/tests_week07.py
+#irlc/tests/tests_week08.py
+#irlc/tests/tests_week09.py
+#irlc/tests/tests_week10.py
 irlc/tests/tests_week11.py
 irlc/tests/tests_week12.py
 irlc/tests/tests_week13.py
 
 #irlc/project2
-irlc/project3
-irlc/project3i
+#irlc/project3
 irlc/project4
 
 #irlc/exam/exam2024spring/*.zip
 #irlc/exam/exam2024spring/*.pdf
 
-irlc/exam/exam202*/*.zip
-irlc/exam/exam202*/*.pdf
+#irlc/exam/exam202*/*.zip
+#irlc/exam/exam202*/*.pdf
 
-irlc/exam/exam20*/solution
+#irlc/exam/exam20*/solution
 
-irlc/exam/midterm2023a
-irlc/exam/midterm2023b
+#irlc/exam/midterm2023a
+#irlc/exam/midterm2023b
 
 # irlc/lectures/lec01
 # irlc/lectures/lec02
@@ -62,20 +61,20 @@ irlc/exam/midterm2023b
 #irlc/lectures/lec04
 #irlc/lectures/lec05
 #irlc/lectures/lec06
-irlc/lectures/lec07
-irlc/lectures/lec08
-irlc/lectures/lec09
-irlc/lectures/lec10
+#irlc/lectures/lec07
+#irlc/lectures/lec08
+#irlc/lectures/lec09
+#irlc/lectures/lec10
 irlc/lectures/lec11
 irlc/lectures/lec12
 irlc/lectures/lec13
 
 # Always ignore these.
-
+irlc/project3i
 solutions/exam
 exam_tabular_examples
-irlc/exam/exam2025*/*.zip
-irlc/exam/exam2025*/*.pdf
+irlc/exam/exam2026*/*.zip
+irlc/exam/exam2026*/*.pdf
 irlc/project0/fruit*_complete*.py
 *tests_complete_grade*.py
 **/__pycache__/*
