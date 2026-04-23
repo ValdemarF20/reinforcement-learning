@@ -33,55 +33,142 @@
 
 \title{ Report 3 hand-in }
 \date{ \today }
-\author{Alice (\texttt{s000001})\and  Bob (\texttt{s000002})\and Clara (\texttt{s000003}) } 
+\author{Fabian (\texttt{s245632})\and  Valdemar (\texttt{s246575})}
 
 \begin{document}
 \maketitle
 
 \begin{table}[ht!]
 \caption{Attribution table. Feel free to add/remove rows and columns}
-\begin{tabular}{llll}
+\begin{tabular}{lll}
 \toprule
-                                                                           & Fabian  & Valdemar   \\
+                                                                           & Fabian   &  Valdemar \\
 \midrule
- 1: Optimal policy                                                         & 0\%  & 100\% \\
- 2: Simulating a finite approximation of the optimal action-value function & 0-100\%  & 0-100\% \\
- 3: Analytically computing the optimal action-value function               & 0-100\%  & 0-100\% \\
- 4: Extend solution to all states and actions                              & 0-100\%  & 0-100\% \\
- 5: Modified reward function                                               & 0-100\%  & 0-100\% \\
- 6: Long bridge                                                            & 0-100\%  & 0-100\% \\
+ 1: Optimal policy                                                         & 60\%  & 40\%  \\
+ 2: Simulating a finite approximation of the optimal action-value function & 40\%  & 60\%  \\
+ 3: Analytically computing the optimal action-value function               & 60\%  & 40\%  \\
+ 4: Extend solution to all states and actions                              & 40\%  & 60\%  \\
+ 5: Modified reward function                                               & 60\%  & 40\%  \\
+ 6: Long bridge                                                            & 40\%  & 60\%  \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 %\paragraph{Statement about collaboration:}
-%Please edit this section to reflect how you have used external resources. The following statement will in most cases suffice: 
+%Please edit this section to reflect how you have used external resources. The following statement will in most cases suffice:
 %\emph{The code in the irls/project1 directory is entirely}
 
 %\paragraph{Main report:}
-Headings have been inserted in the document for readability. You only have to edit the part which says \yoursolution. 
+Headings have been inserted in the document for readability. You only have to edit the part which says \yoursolution.
 
+\newpage
 \section{Jar-Jar at the battle of Naboo (\texttt{jarjar.py})}
 \subsubsection*{{\color{red}Problem 3:  Analytically computing the optimal action-value function}}
-	
-		Using that ... we obtain 
-		\begin{align}
-			Q^*(0,1) & = \cdots \\
-			Q^*(1,-1) & = \cdots
-		\end{align}
-		therefore...
-	
+
+		Using $r(s) = -|s|$ and noting that the optimal policy alternates between $s = 0$ and $s = 1$, the Bellman equations can be written as
+        \begin{align*}
+        V^*(0) &= \gamma V^*(1), \\
+        V^*(1) &= -1 + \gamma V^*(0).
+        \end{align*}
+        Solving this system yields
+        \begin{align*}
+        V^*(0) &= \frac{-\gamma}{1 - \gamma^2}, \\
+        V^*(1) &= \frac{-1}{1 - \gamma^2}.
+        \end{align*}
+
+        Applying
+        \[
+        Q^*(s,a) = r(s) + \gamma V^*(s + a),
+        \]
+        we obtain
+        \begin{align*}
+        Q^*(0,1) &= \frac{-\gamma}{1 - \gamma^2}, \tag{1} \\
+        Q^*(1,-1) &= \frac{-1}{1 - \gamma^2}. \tag{2}
+        \end{align*}
+
+        Therefore,
+        \[
+        Q^*(1,-1) \leq Q^*(0,1) \leq 0 \quad \text{for all } 0 \leq \gamma < 1,
+        \]
+        confirming that being closer to the origin is preferable and that the agent always accumulates negative reward.
+
+
 \subsubsection*{{\color{red}Problem 5:  Modified reward function}}
-	
-Using ... we get that ...:
-		\begin{align}
-			v_\pi(s) = \dots.
-		\end{align}
-	
+
+Using the fact that the expected reward $p \cdot r_0 + (1-p) \cdot 2r_0 = (2-p)r_0$ is the same for all states and actions, and solving the Bellman equation
+  $v_\pi(s) = (2-p)r_0 + \gamma v_\pi(s)$, we get that $v_\pi(s)$ is constant across all states and policies:
+
+  $$v_\pi(s) = \frac{(2-p),r_0}{1-\gamma}.$$
+
+
 \section{Optimal escape}
 \subsubsection*{{\color{red}Problem 6:  Long bridge}}
-	
-			Because ... we see that if $\cdots > \cdots$ one should go left, if  $\cdots < \cdots$ one should go right,
-	and when $\cdots = \cdots$ it makes no difference.
-		
+Let $c>0$ denote the step cost, so the reward for each ordinary step is $-c$. Assuming that the left door is reached
+after $n$ steps and gives reward $R_{\text{left}}=1$, while the right door is reached after $m$ steps and gives reward
+$R_{\text{right}}=2$, we get for $0<\gamma<1$ (discount):
+
+\[V_{\text{left}} = -c \frac{1-\gamma^n}{1-\gamma} + \gamma^n\]
+\[V_{\text{right}} = -c \frac{1-\gamma^m}{1-\gamma} + 2\gamma^m\]
+When setting it up using the geometric-series formula and discounted return definition. From this we get
+\[
+V_{\text{left}} - V_{\text{right}}
+=
+-c\frac{1-\gamma^n}{1-\gamma} + \gamma^n
++ c\frac{1-\gamma^m}{1-\gamma} - 2\gamma^m
+\]
+\[
+= \gamma^n\left(1+\frac{c}{1-\gamma}\right)
+- \gamma^m\left(2+\frac{c}{1-\gamma}\right)
+\]
+Because
+\[
+V_{\text{left}} > V_{\text{right}}
+\Leftrightarrow
+\gamma^n\left(1+\frac{c}{1-\gamma}\right)
+>
+\gamma^m\left(2+\frac{c}{1-\gamma}\right),
+\]
+we see that if
+\[
+\gamma^n\left(1+\frac{c}{1-\gamma}\right)
+>
+\gamma^m\left(2+\frac{c}{1-\gamma}\right)
+\]
+best option is to go left, if
+\[
+\gamma^n\left(1+\frac{c}{1-\gamma}\right)
+<
+\gamma^m\left(2+\frac{c}{1-\gamma}\right)
+\]
+best option is to go right, and when
+\[
+\gamma^n\left(1+\frac{c}{1-\gamma}\right)
+=
+\gamma^m\left(2+\frac{c}{1-\gamma}\right)
+\]
+it makes no difference.
+
+
+%Notes:
+%Reward right door: 2
+%Reward left door: 1
+
+%Cost step: > 0
+
+%n tiles on left
+%m tiles on right
+
+%gamma: discount
+
+
+%$$
+%V_{left} = (-cost) \times \frac{1 - \gamma^n}{1 - \gamma} + \gamma^n \times R_{left}
+%$$
+%$$
+%V_{right} = (-cost) \times \frac{1 - \gamma^m}{1 - \gamma} + \gamma^m \times R_{right}
+%$$
+
+%It requires $V_{left} = V_{right}$ for equilibrium
+
+
 \end{document}
