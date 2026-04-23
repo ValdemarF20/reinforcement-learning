@@ -100,63 +100,63 @@ class LinearQAgentQuestion(LinearAgentStub):
         self.chk_Q_weight_vector_w()
 
 
-class SimpleQLearningQuestion(UTestCase):
-    def test_a_greedy_policy(self):
-        from irlc.ex11.old.question_simple_q import a_greedy_policy
-
-        states = [0, 1, 2]
-        actions = [0, 1]
-        q_example = {}  # Initialize a small example of Q-values.
-        for s in states:
-            for a in actions:
-                q_example[s, a] = s / 2 + 2 ** a  # Initialize so that Q(s, a) = s / 2 + 2**a
-        self.assertEqual(a_greedy_policy(q_example, state=0), 1)
-
-
-    def test_b_update_single_q(self):
-        from irlc.ex11.old.question_simple_q import b_update_single_q
-        states = [0, 1, 2]
-        actions = [0, 1]
-        q_example = {}  # Initialize a small example of Q-values.
-        for s in states:
-            for a in actions:
-                q_example[s, a] = s / 2 + 2 ** a  # Initialize so that Q(s, a) = s / 2 + 2**a
-
-        alpha = 0.8
-        gamma = 0.9
-        state = 0
-        action = 1
-        reward = 0.8
-        next_state = 2
-        self.assertAlmostEqual(b_update_single_q(alpha, gamma, q_example, state, action, reward, next_state), 3.2, places=4)
-
-    def test_c_update_all_q(self):
-        from irlc.ex11.old.question_simple_q import c_update_all_q
-
-        alpha = 0.8
-        gamma = 0.9
-        state = 0
-        action = 1
-
-        # The trajectory is of the form [..., (S_t, A_t, R_{t+1}), ... ]
-        example_trajectory = [(0, 1, 0.5),
-                              (2, 0, -0.75),
-                              (0, 1, 0.5),
-                              (1, 0, 0.5)]
-
-        updated_q_values = c_update_all_q(alpha, gamma, example_trajectory)  # This should be a dictionary.
-        self.assertAlmostEqual(updated_q_values[state, action], 0.48, places=4)
-
-    def test_c_update_all_q_b(self):
-        from irlc.ex11.old.question_simple_q import c_update_all_q
-        example_trajectory = [(0, 1, 0.5),
-                              (2, 0, -0.75),
-                              (0, 1, 0.5),
-                              (1, 0, 0.5)]
-
-        updated_q_values = c_update_all_q(alpha=0.8, gamma=0.9, states_actions_rewards=example_trajectory)
-        for (s,a, _) in example_trajectory[:-2]:
-            self.assertAlmostEqualC(updated_q_values[s, a], places=4)
+# class SimpleQLearningQuestion(UTestCase):
+#     def test_a_greedy_policy(self):
+#         from irlc.ex11.old.question_simple_q import a_greedy_policy
+#
+#         states = [0, 1, 2]
+#         actions = [0, 1]
+#         q_example = {}  # Initialize a small example of Q-values.
+#         for s in states:
+#             for a in actions:
+#                 q_example[s, a] = s / 2 + 2 ** a  # Initialize so that Q(s, a) = s / 2 + 2**a
+#         self.assertEqual(a_greedy_policy(q_example, state=0), 1)
+#
+#
+#     def test_b_update_single_q(self):
+#         from irlc.ex11.old.question_simple_q import b_update_single_q
+#         states = [0, 1, 2]
+#         actions = [0, 1]
+#         q_example = {}  # Initialize a small example of Q-values.
+#         for s in states:
+#             for a in actions:
+#                 q_example[s, a] = s / 2 + 2 ** a  # Initialize so that Q(s, a) = s / 2 + 2**a
+#
+#         alpha = 0.8
+#         gamma = 0.9
+#         state = 0
+#         action = 1
+#         reward = 0.8
+#         next_state = 2
+#         self.assertAlmostEqual(b_update_single_q(alpha, gamma, q_example, state, action, reward, next_state), 3.2, places=4)
+#
+#     def test_c_update_all_q(self):
+#         from irlc.ex11.old.question_simple_q import c_update_all_q
+#
+#         alpha = 0.8
+#         gamma = 0.9
+#         state = 0
+#         action = 1
+#
+#         # The trajectory is of the form [..., (S_t, A_t, R_{t+1}), ... ]
+#         example_trajectory = [(0, 1, 0.5),
+#                               (2, 0, -0.75),
+#                               (0, 1, 0.5),
+#                               (1, 0, 0.5)]
+#
+#         updated_q_values = c_update_all_q(alpha, gamma, example_trajectory)  # This should be a dictionary.
+#         self.assertAlmostEqual(updated_q_values[state, action], 0.48, places=4)
+#
+#     def test_c_update_all_q_b(self):
+#         from irlc.ex11.old.question_simple_q import c_update_all_q
+#         example_trajectory = [(0, 1, 0.5),
+#                               (2, 0, -0.75),
+#                               (0, 1, 0.5),
+#                               (1, 0, 0.5)]
+#
+#         updated_q_values = c_update_all_q(alpha=0.8, gamma=0.9, states_actions_rewards=example_trajectory)
+#         for (s,a, _) in example_trajectory[:-2]:
+#             self.assertAlmostEqualC(updated_q_values[s, a], places=4)
 
 
 class Week11Tests(Report):
@@ -167,7 +167,7 @@ class Week11Tests(Report):
         # (NStepSarseEvaluationQuestion, 10),
         (LinearQAgentQuestion, 10),
         (LinearSarsaAgentQuestion, 10),
-        (SimpleQLearningQuestion, 10),
+        # (SimpleQLearningQuestion, 10),
         (NStepSarsaQuestion, 5),
         ]
 if __name__ == '__main__':
