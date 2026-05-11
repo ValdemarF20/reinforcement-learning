@@ -21,8 +21,13 @@ class UCBQAgent(QAgent):
 
     def pi(self, s, k, info=None):
         actions, Qs = self.Q.get_Qs(s, info)
-        ucb = [Q + self.c * np.sqrt(np.log(self.t + 1) / (self.N[(s, a)] + 1e-8))
-               for a, Q in zip(actions, Qs)]
+        n_total = sum(self.N[(s, a)] for a in actions)
+        if n_total == 0:
+            ucb = list(Qs)
+        else:
+            ucb = [float('inf') if self.N[(s, a)] == 0
+                   else Q + self.c * np.sqrt(np.log(n_total) / self.N[(s, a)])
+                   for a, Q in zip(actions, Qs)]
         return actions[int(np.argmax(ucb))]
 
     def train(self, s, a, r, sp, done=False, info_s=None, info_sp=None):
