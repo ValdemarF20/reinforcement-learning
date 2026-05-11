@@ -11,8 +11,7 @@ def pi_optimal(s : int) -> int:
 def Q0_approximate(gamma : float, N : int) -> float: 
     """ Return the (estimate) of the optimal action-value function Q^*(0,1) based on
     the first N rewards using a discount factor of gamma. Note the similarity to the n-step estimator. """
-    # TODO: 1 lines missing.
-    raise NotImplementedError("Return N-term approximation of the optimal action-value function Q^*(0,1)")
+    return_estimate = sum(gamma**n for n in range(1, N, 2))
     return return_estimate
 
 def Q_exact(s : int,a : int, gamma : float) -> float:
@@ -26,8 +25,13 @@ def Q_exact(s : int,a : int, gamma : float) -> float:
 
     *Don't* use your solution to Q0_approximate; it is an approximate (finite-horizon) approximation.
     """
-    # TODO: 6 lines missing.
-    raise NotImplementedError("return optimal action-value function Q^*(s,a) as a float.")
+    r = -abs(s)
+    n = abs(s + a)
+    if n == 0:
+        v_next = -gamma / (1 - gamma**2)
+    else:
+        v_next = -n / (1 - gamma) + gamma / (1 - gamma)**2 - 2 * gamma**(n + 1) / ((1 - gamma)**2 * (1 + gamma))
+    return r + gamma * v_next
 
 
 if __name__ == "__main__":
