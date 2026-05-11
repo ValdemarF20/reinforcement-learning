@@ -17,20 +17,91 @@ class TinyGridworld(GridworldEnvironment):
     def __init__(self, *args, **kwargs):
         super().__init__(small_circle_grid, *args, **kwargs)
 
-# TODO: Code has been removed from here. 
+
+class LinearGridworldEncoder(FeatureEncoder):
+    """Linear feature encoder: z_lin(s) = [1, u, v] where u = i/(H-1), v = j/(W-1)"""
+    def __init__(self, env):
+        self.env = env
+        self.H = env.mdp.height
+        self.W = env.mdp.width
+        self.na = env.action_space.n  # Number of actions (4)
+        self.l = 3  # Dimension of state feature vector
+        super().__init__(env)
+
+    @property
+    def d(self):
+        """Total feature dimension: 4l (one block per action)"""
+        return self.na * self.l
+
+    def x(self, s, a):
+        """Compute the 4l-dimensional feature vector x(s,a) as defined in the problem"""
+        i, j = s
+        # Normalize coordinates
+        u = i / (self.H - 1) if self.H > 1 else 0
+        v = j / (self.W - 1) if self.W > 1 else 0
+
+        # State feature vector z_lin(s) = [1, u, v]
+        z = np.array([1.0, u, v])
+
+        # Create 4l-dimensional action-dependent vector
+        x = np.zeros(self.d)
+        # Place z at the correct block for action a
+        start_idx = a * self.l
+        x[start_idx:start_idx + self.l] = z
+
+        return x
+
+
+class QuadraticGridworldEncoder(FeatureEncoder):
+    """Quadratic feature encoder: z_quad(s) = [1, u, v, u^2, v^2, uv] where u = i/(H-1), v = j/(W-1)"""
+    def __init__(self, env):
+        self.env = env
+        self.H = env.mdp.height
+        self.W = env.mdp.width
+        self.na = env.action_space.n  # Number of actions (4)
+        self.l = 6  # Dimension of state feature vector
+        super().__init__(env)
+
+    @property
+    def d(self):
+        """Total feature dimension: 4l (one block per action)"""
+        return self.na * self.l
+
+    def x(self, s, a):
+        """Compute the 4l-dimensional feature vector x(s,a) as defined in the problem"""
+        i, j = s
+        # Normalize coordinates
+        u = i / (self.H - 1) if self.H > 1 else 0
+        v = j / (self.W - 1) if self.W > 1 else 0
+
+        # State feature vector z_quad(s) = [1, u, v, u^2, v^2, uv]
+        z = np.array([1.0, u, v, u**2, v**2, u*v])
+
+        # Create 4l-dimensional action-dependent vector
+        x = np.zeros(self.d)
+        # Place z at the correct block for action a
+        start_idx = a * self.l
+        x[start_idx:start_idx + self.l] = z
+
+        return x
+
 
 def linear_experiment(episodes=10000, alpha=0.02, states_and_actions=( ((0,0),0) )):
     env = TinyGridworld()
-    # TODO: Code has been removed from here.
-    raise NotImplementedError("Your implementation here.")
-    q_values = {(s, a): agent.Q(s, a) for s, a in states_and_actions} # Example: If you trained an agent, this will extract the q-values.
+    # Create LinearSemiGradSarsa agent with linear feature encoder and epsilon=1 (random policy)
+    agent = LinearSemiGradSarsa(env, gamma=1.0, epsilon=1, alpha=alpha, q_encoder=LinearGridworldEncoder(env))
+    train(env, agent, num_episodes=episodes, verbose=False)
+    # Extract Q-values for the specified state-action pairs
+    q_values = {(s, a): agent.Q(s, a) for s, a in states_and_actions}
     return q_values
 
 def quadratic_experiment(episodes=10000, alpha=0.02, states_and_actions=( ((0,0),0) )):
     env = TinyGridworld()
-    # TODO: Code has been removed from here.
-    raise NotImplementedError("Your code here")
-    q_values = {(s, a): agent.Q(s, a) for s, a in states_and_actions}  # Example: If you trained an agent, this will extract the q-values.
+    # Create LinearSemiGradSarsa agent with quadratic feature encoder and epsilon=1 (random policy)
+    agent = LinearSemiGradSarsa(env, gamma=1.0, epsilon=1, alpha=alpha, q_encoder=QuadraticGridworldEncoder(env))
+    train(env, agent, num_episodes=episodes, verbose=False)
+    # Extract Q-values for the specified state-action pairs
+    q_values = {(s, a): agent.Q(s, a) for s, a in states_and_actions}
     return q_values
 
 

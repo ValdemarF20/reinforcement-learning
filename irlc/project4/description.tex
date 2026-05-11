@@ -1,0 +1,291 @@
+\DocumentMetadata{lang=en, pdfstandard=ua-2, testphase={phase-III,math,table,title,graphic}}
+\documentclass[11pt]{article}
+\usepackage[top=1.25cm,bottom=1.6cm,left=2.35cm,right=2.35cm]{geometry}
+\usepackage[dvipsnames,svgnames,x11names]{xcolor}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{framed}
+\usepackage{listings}
+\usepackage{upquote}
+\usepackage{array}
+\usepackage{pifont}
+\hypersetup{pdfauthor={},pdftitle={}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\fontsize{14}{14}\selectfont EXERCISE}
+\fancyhead[R]{\fontsize{14}{14}\selectfont May 11th, 2026}
+\setlength{\headheight}{18pt}
+\definecolor{codebg}{RGB}{238,238,238}
+\definecolor{framegray}{RGB}{140,140,140}
+\definecolor{codegreen}{RGB}{80,120,110}
+\definecolor{codered}{RGB}{170,70,70}
+\definecolor{codeblue}{RGB}{70,70,160}
+\definecolor{codepurple}{RGB}{150,60,180}
+\definecolor{lightgrayline}{RGB}{210,210,210}
+\lstdefinestyle{pythonstyle}{
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\tiny\color{black},
+  stepnumber=1,
+  numbersep=10pt,
+  frame=single,
+  rulecolor=\color{lightgrayline},
+  framerule=0.8pt,
+  xleftmargin=0pt,
+  xrightmargin=0pt,
+  aboveskip=0.4em,
+  belowskip=0.4em,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+  commentstyle=\itshape\color{codegreen},
+  keywordstyle=\color{codeblue},
+  stringstyle=\color{codered}
+}
+\lstdefinestyle{textstyle}{
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\tiny\color{black},
+  stepnumber=1,
+  numbersep=10pt,
+  frame=single,
+  rulecolor=\color{lightgrayline},
+  framerule=0.8pt,
+  xleftmargin=0pt,
+  xrightmargin=0pt,
+  aboveskip=0.4em,
+  belowskip=0.4em,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true
+}
+\titleformat{\section}{\normalfont\bfseries\fontsize{24}{26}\selectfont}{}{0pt}{}
+\titleformat{\subsection}{\normalfont\bfseries\fontsize{17}{19}\selectfont}{}{0pt}{}
+\newcommand{\problemheader}[1]{%
+  \begin{tcolorbox}[colback=gray!10,colframe=gray!55,boxrule=0.7pt,arc=2mm,left=10pt,right=10pt,top=8pt,bottom=8pt]
+  {\fontsize{17}{19}\selectfont \textbf{#1}}
+  \end{tcolorbox}%
+}
+\newcommand{\inlinecode}[1]{\colorbox{gray!15}{\texttt{#1}}}
+\begin{document}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.62\textwidth]{img-0.jpeg}
+  \caption{Left: The gridworld map considered in this exercise. Right: The state-action function $Q_{\pi}(s,a)$ for the random policy computed using policy evaluation.}
+\end{figure}
+
+\section{2\quad Computing State-action values using random probe-
+droids (\texttt{probe\_droids.py})}
+
+In this problem, you a dispatching a large amount of probe-droids in a meteor field shown in fig. 2 (left). Probe droids fly around randomly\footnote{i.e., their policy $\pi$ selects among all available actions with equal probability} , and by flying a large number $n$ of probe-droids we can approximate the state-action function $Q_{\pi}(s,a)$ and use it for nefarious purposes.
+
+For reference, fig. 2 (right) shows the (true) action-value function computed using policy evaluation $(\gamma = 1)$, however, we have to compute it using samples.
+
+One way to do that is to use standard tabular Sarsa learning, and simulate the random policy by setting $\epsilon = 1$ (thereby guaranteeing random actions). The result of this, using $n = 20000$ episodes and a learning rate of 0.02, can be seen in (left). As can be seen, it fairly closely matches policy evaluation but with some randomness due to the learning rate/finite number of episodes.
+
+\textbf{This exercise:} \quad Your task is to estimate $Q_{\pi}(s,a)$, for the random policy, using two different linear function approximators. This is equivalent to evaluating Sarsa with a (suitable) linear function approximator using $\epsilon = 1$.
+
+We construct the linear function approximator as follows: Suppose the gridworld has a height of $H = 3$ tiles and a width of $W = 3$ tiles.
+
+A state has at most $\mathcal{A}(s)=\{0,1,2,3\}$ actions. Suppose we let $\boldsymbol{x}(s)$ be any function approximator depending on a state $s$, and let $l=|\boldsymbol{x}(s)|$ be the dimension.
+
+We can then define the full linear function approximator as a $4l$ long vector $\boldsymbol{x}(s,a)$ defined as:
+
+\begin{equation*}
+\boldsymbol{x}(s,a=0)=
+\begin{bmatrix}
+\boldsymbol{x}(s)\\
+\mathbf{0}_{3l}
+\end{bmatrix},\quad
+\boldsymbol{x}(s,a=1)=
+\begin{bmatrix}
+\mathbf{0}_{l}\\
+\boldsymbol{x}(s)\\
+\mathbf{0}_{2l}
+\end{bmatrix},\quad
+\boldsymbol{x}(s,a=2)=
+\begin{bmatrix}
+\mathbf{0}_{2l}\\
+\boldsymbol{x}(s)\\
+\mathbf{0}_{l}
+\end{bmatrix},\quad
+\boldsymbol{x}(s,a=3)=
+\begin{bmatrix}
+\mathbf{0}_{3l}\\
+\boldsymbol{x}(s)
+\end{bmatrix},
+\end{equation*}
+where e.g. $\mathbf{0}_{3l}$ is a vector of $3l$ zeros.
+
+Thus, all that remains is to define $\boldsymbol{x}(s)$.
+
+\newpage
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.94\textwidth]{img-2.jpeg}
+  \caption{Left: The gridworld map considered in this exercise where the $Q(s,a)$ function is estimated using Sarsa larning. Middle: The $Q(s,a)$ function estimated using the (linear) function approximator given below. Right: $Q(s,a)$ estimated using the quadratic function approximator. Note that you will not get these exact results due to the finite number of samples and $\alpha > 0$.}
+\end{figure}
+
+\textbf{Testing and evaluation}\quad After you have implemented the feature approximator, your task is to evaluate select values of $Q(s,a)$ for specific state/action combinations. For example, the following code shows how this can be done using the Sarsa agent:
+
+\begin{lstlisting}[style=pythonstyle,language=Python]
+# probe_droids.py
+agent = SarsaAgent(env, alpha=0.02, gamma=1., epsilon=1)
+train(env, agent, num_episodes=10000, verbose=False)
+
+states_and_actions = [((0, 0), 0),
+                      ((0, 0), 1),
+                      ((2, 0), 3),
+                      ((0, 2), 1),
+                      ]
+q_values = {(s, a): agent.Q[s, a] for s, a in states_and_actions}
+for (s, a), q in q_values.items():
+    print(f"In state {s=} and action {a=} we have Q(s,a) = {q}.")
+\end{lstlisting}
+
+This will produce output which is consistent with figure fig. 2, right:
+
+\begin{lstlisting}[style=textstyle]
+In state s=(0, 0) and action a=0 we have Q(s,a) = 0.39042215523071055.
+In state s=(0, 0) and action a=1 we have Q(s,a) = -0.30793653501737517.
+In state s=(2, 0) and action a=3 we have Q(s,a) = -0.34343217577946533.
+In state s=(0, 2) and action a=1 we have Q(s,a) = 0.9999999999999947.
+\end{lstlisting}
+
+\textbf{The linear function approximator}\quad For the first feature map, we use the normalized grid coordinates of the state. Let $s=(i,j)$ denote the row and column of the agent, and
+
+\newpage
+
+define
+
+\begin{equation}
+\boldsymbol{z}_{\mathrm{lin}}(s)=
+\begin{bmatrix}
+1\\
+u\\
+v
+\end{bmatrix},
+\qquad
+u=\frac{i}{H-1}\text{ and }v=\frac{j}{W-1}.
+\tag{2}
+\end{equation}
+
+Thus, the state feature dimension is $l=3$.
+
+\begin{tcolorbox}[colback=gray!10,colframe=gray!55,boxrule=0.7pt,arc=2mm,left=12pt,right=12pt,top=8pt,bottom=10pt]
+{\fontsize{16}{18}\selectfont Problem 2 \textit{Linear function approximator}}\par
+\vspace{0.35em}
+Implement the function \inlinecode{linear\_experiment}. The function should accept a number of episodes, the learning rate $\alpha$, a gridworld layout, and a sequence of states and actions. It should then use the linear function approximator described in eq. (2) together with the action-dependent construction above, and return a dictionary of q-values in the previously described format. An example of what you can expect is shown in fig. 3.
+\end{tcolorbox}
+
+When done, the script will print out the $Q$-values like this (note: these values are somewhat random due to the limited number of samples)
+
+\begin{lstlisting}[style=textstyle]
+In state s=(0, 0) and action a=0 we have Q(s,a)=0.2226488621622873 (Linear function approximator)
+In state s=(0, 0) and action a=1 we have Q(s,a)=-0.19386140154078677 (Linear function approximator)
+In state s=(2, 0) and action a=3 we have Q(s,a)=-0.10626710421845728 (Linear function approximator)
+In state s=(0, 2) and action a=1 we have Q(s,a)=0.46967508585248996 (Linear function approximator)
+\end{lstlisting}
+
+\begin{minipage}[t]{0.06\textwidth}
+\vspace{0pt}
+{\Large\ding{108}}
+\end{minipage}
+\begin{minipage}[t]{0.9\textwidth}
+\vspace{0pt}
+\textbf{Info:}
+\begin{itemize}
+\item One approach is to use the \inlinecode{LinearSemiGradSarsa}, using $\epsilon = 1$, but specify a different feature encoder
+\item you can find more about feature encoders here: \url{https://www2.compute.dtu.dk/courses/02465/exercises/ex11.html}
+\item You can get the $H$ and $W$ values using \inlinecode{env.mdp.height} and \inlinecode{env.mdp.width}.
+\end{itemize}
+\end{minipage}
+
+\textbf{The quadratic function approximator}\quad For the second feature map, we augment the normalized coordinates with quadratic terms and an interaction term. Using the same notation as above, define
+
+\begin{equation}
+\boldsymbol{z}_{\mathrm{quad}}(s)=
+\begin{bmatrix}
+1\\
+u\\
+v\\
+u^{2}\\
+v^{2}\\
+uv
+\end{bmatrix},
+\qquad
+u=\frac{i}{H-1}\text{ and }v=\frac{j}{W-1}.
+\tag{3}
+\end{equation}
+
+In this case, the state feature dimension is $l=6$.
+
+\newpage
+\thispagestyle{empty}
+
+\noindent
+\begin{minipage}[t]{\textwidth}
+  \vspace*{-0.2cm}
+  \begin{minipage}[t]{0.5\textwidth}
+    \raggedright
+    {\large EXERCISE}
+  \end{minipage}%
+  \begin{minipage}[t]{0.5\textwidth}
+    \raggedleft
+    {\large May 11th, 2026}
+  \end{minipage}
+\end{minipage}
+
+\vspace{0.15cm}
+\noindent\rule{\textwidth}{0.4pt}
+
+\vspace{1.2cm}
+
+\begin{tcolorbox}[enhanced,colback=white,colframe=gray!70,boxrule=0.4pt,arc=2.5mm,left=10pt,right=10pt,top=12pt,bottom=12pt]
+\noindent
+\raisebox{0.8ex}{\hspace{0.4em}\fboxsep=3pt\colorbox{white}{\strut \large Problem 3 \textit{Quadratic function approximator}}}
+
+\vspace{0.45em}
+
+Implement the function \texttt{quadratic\_experiment}. The function should accept a number of episodes, the learning rate $\alpha$, a gridworld layout, and a sequence of states and actions. It should then use the quadratic function approximator described in eq.\ (3) together with the action-dependent construction above, and return a dictionary of q-values in the previously described format. An example of what you can expect is shown in fig.\ 3.
+\end{tcolorbox}
+
+\vspace{0.9cm}
+
+\begin{center}
+\parbox{0.88\textwidth}{\centering Again, the following are examples of valid $q$-values, but yours may vary somewhat due to the finite number of samples:}
+\end{center}
+
+\vspace{0.55cm}
+
+{\footnotesize
+\begin{tabular}{@{}r l@{}}
+1 & In state s=(0, 0) and action a=0 we have Q(z,a)=0.28231914123335555 (Quadratic function approximator)\\
+2 & In state s=(0, 0) and action a=1 we have Q(z,a)=-0.1904661084415149 (Quadratic function approximator)\\
+3 & In state s=(2, 0) and action a=3 we have Q(z,a)=-0.17901693611399366 (Quadratic function approximator)\\
+4 & In state s=(0, 2) and action a=1 we have Q(z,a)=0.7379605641504839 (Quadratic function approximator)
+\end{tabular}
+}
+
+\vspace{1.6cm}
+
+{\huge \textbf{References}}
+
+\vspace{0.8cm}
+
+\noindent [SB18]\hspace{0.8em}Richard S. Sutton and Andrew G. Barto. \textit{Reinforcement Learning: An Introduction}.\\
+\hspace*{3.9em}The MIT Press, second edition, 2018. (Freely available online).
+
+\end{document}

@@ -22,8 +22,12 @@ class LinearSemiGradQAgent(QAgent):
         self.Q = LinearQEncoder(env, tilings=8) if q_encoder is None else q_encoder 
 
     def train(self, s, a, r, sp, done=False, info_s=None, info_sp=None): 
-        # TODO: 4 lines missing.
-        raise NotImplementedError("Implement function body")
+        # Compute the maximum Q-value for the next state
+        a_max = self.Q.get_optimal_action(sp, info_sp)
+        # Compute temporal difference delta
+        delta = r + (self.gamma * self.Q(sp, a_max) if not done else 0) - self.Q(s, a)
+        # Update weights: w += alpha * delta * x(s,a)
+        self.Q.w += self.alpha * delta * self.Q.x(s, a)
 
     def __str__(self):
         return f"LinearSemiGradQ{self.gamma}_{self.epsilon}_{self.alpha}"

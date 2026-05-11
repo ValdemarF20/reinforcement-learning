@@ -42,11 +42,11 @@
 \caption{Attribution table. Feel free to add/remove rows and columns}
 \begin{tabular}{llll}
 \toprule
-                                    & Alice   & Bob    & Clara   \\
+                                    & Fabian   & Valdemar   \\
 \midrule
- 1: UCB-based exploration           & 0-100\%  & 0-100\% & 0-100\%  \\
- 2: Linear function approximator    & 0-100\%  & 0-100\% & 0-100\%  \\
- 3: Quadratic function approximator & 0-100\%  & 0-100\% & 0-100\%  \\
+ 1: UCB-based exploration           & 60\%  & 40\%  \\
+ 2: Linear function approximator    & 40\%  & 60\%  \\
+ 3: Quadratic function approximator & 40\%  & 60\%  \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -59,5 +59,42 @@
 Headings have been inserted in the document for readability. You only have to edit the part which says \yoursolution. 
 
 \section{Finding the rebels using UCB-exploration (\texttt{rebels.py})} 
-\section{Computing State-action values using random probe-droids (\texttt{probe\_droids.py})} 
+
+\section{Computing State-action values using random probe-droids (\texttt{probe\_droids.py})}
+
+\subsubsection*{{\color{red}Problem 2: Linear function approximator}}
+
+We implement a linear feature encoder that maps gridworld states to feature vectors. Given a state $s = (i, j)$ where $i$ and $j$ are the row and column, we compute normalized coordinates:
+\begin{align}
+u &= \frac{i}{H-1}, \quad v = \frac{j}{W-1}
+\end{align}
+where $H$ is the grid height and $W$ is the grid width.
+
+The linear feature vector is:
+\begin{align}
+z_{\text{lin}}(s) = \begin{bmatrix} 1 \\ u \\ v \end{bmatrix}
+\end{align}
+
+For the action-dependent feature representation, we construct a $4\ell$-dimensional vector where $\ell = 3$ is the dimension of $z_{\text{lin}}(s)$. Each action $a \in \{0, 1, 2, 3\}$ gets its own 3-dimensional block:
+\begin{align}
+x(s, a) = \begin{bmatrix} \mathbf{0}_{a} \\ z_{\text{lin}}(s) \\ \mathbf{0}_{a'} \end{bmatrix}
+\end{align}
+
+The Q-values are then approximated as $Q(s,a) = x(s,a)^\top w$, where $w \in \mathbb{R}^{12}$ is the weight vector.
+
+We train a LinearSemiGradSarsa agent with this feature encoder using a uniform random policy ($\epsilon = 1$) for 20,000 episodes with learning rate $\alpha = 0.02$ and discount factor $\gamma = 1.0$.
+
+\subsubsection*{{\color{red}Problem 3: Quadratic function approximator}}
+
+For the quadratic approximator, we augment the linear features with quadratic terms and interaction terms:
+\begin{align}
+z_{\text{quad}}(s) = \begin{bmatrix} 1 \\ u \\ v \\ u^2 \\ v^2 \\ uv \end{bmatrix}
+\end{align}
+
+This gives a state feature dimension of $\ell = 6$. The action-dependent feature vector $x(s,a)$ similarly has dimension $d = 4\ell = 24$, with the quadratic feature vector placed in the block corresponding to action $a$.
+
+We train a LinearSemiGradSarsa agent with this feature encoder using the same settings as the linear case: uniform random policy, 20,000 episodes, $\alpha = 0.02$, and $\gamma = 1.0$.
+
+The quadratic feature approximator can capture more complex value functions than the linear approximator, potentially providing better Q-value estimates despite using the same amount of training data.
+
 \end{document}
