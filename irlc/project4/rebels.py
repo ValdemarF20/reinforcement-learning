@@ -1,5 +1,6 @@
 # This file may not be shared/redistributed without permission. Please read copyright notice in the git repo. If this file contains other copyright notices disregard this text.
 import numpy as np
+from collections import defaultdict
 from irlc.ex10.q_agent import QAgent
 from irlc.gridworld.gridworld_environments import GridworldEnvironment, grid_bridge_grid
 from irlc import train
@@ -11,10 +12,27 @@ very_basic_grid = [['#',1, '#'],
                     ['#',1, '#']]
 
 
-# TODO: 21 lines missing.
-raise NotImplementedError("I wrote an agent that inherited from the Q-agent, and updated the self.pi and self.train-functions to do UCB-based exploration.")
+class UCBQAgent(QAgent):
+    def __init__(self, env, gamma=1.0, alpha=0.5, c=1.0):
+        self.c = c
+        super().__init__(env, gamma=gamma, alpha=alpha, epsilon=0)
+        self.N = defaultdict(int)
+        self.t = 0
 
-def get_ucb_actions(layout : list, alpha : float, c : float, episodes : int, plot=False) -> list: 
+    def pi(self, s, k, info=None):
+        actions, Qs = self.Q.get_Qs(s, info)
+        ucb = [Q + self.c * np.sqrt(np.log(self.t + 1) / (self.N[(s, a)] + 1e-8))
+               for a, Q in zip(actions, Qs)]
+        return actions[int(np.argmax(ucb))]
+
+    def train(self, s, a, r, sp, done=False, info_s=None, info_sp=None):
+        self.N[(s, a)] += 1
+        self.t += 1
+        max_q_sp = 0 if done else self.Q[sp, self.Q.get_optimal_action(sp, info_sp)]
+        self.Q[s, a] += self.alpha * (r + self.gamma * max_q_sp - self.Q[s, a])
+
+
+def get_ucb_actions(layout : list, alpha : float, c : float, episodes : int, plot=False) -> list:
     """ Return the sequence of actions the agent tries in the environment with the given layout-string when trained over 'episodes' episodes.
     To create an environment, you can use the line:
 
@@ -31,8 +49,13 @@ def get_ucb_actions(layout : list, alpha : float, c : float, episodes : int, plo
     In other words, the return value should be a long list of integers corresponding to actions:
     actions = [0, 1, 2, ..., 1, 3, 2, 1, 0, ...]
     """
-    # TODO: 6 lines missing.
-    raise NotImplementedError("Implement function body")
+    if plot:
+        env = GridworldEnvironment(layout, render_mode='human')
+    else:
+        env = GridworldEnvironment(layout)
+    agent = UCBQAgent(env, alpha=alpha, c=c)
+    stats, trajectories = train(env, agent, num_episodes=episodes, return_trajectory=True, verbose=False)
+    actions = [a for traj in trajectories for a in traj.action[:-1]]
     return actions
 
 if __name__ == "__main__":
