@@ -28,8 +28,10 @@ def value_iteration(mdp, gamma=.99, theta=0.0001, max_iters=10 ** 6, verbose=Fal
             """ Perform the update the value-function V[s] here for the given state. 
             Note that this has a lot of similarity to the policy-evaluation algorithm, and you can re-use 
             a lot of that solution, including value_function2q_function(...) (assuming you used that function). """
-            # TODO: 2 lines missing.
-            raise NotImplementedError("Complete the algorithm here.")
+            Qs = value_function2q_function(mdp, s, gamma, V)
+            v_new = max(Qs.values())
+            Delta = max(Delta, abs(v_new - V[s]))
+            V[s] = v_new
         if verbose:
             print(i, Delta)
         if Delta < theta:
@@ -57,8 +59,8 @@ def values2policy(mdp, V, gamma):
         # Create the policy here. pi[s] = a is the action to be taken in state s.
         # You can use the qs_ helper function to simplify things and perhaps
         # re-use ideas from the dp.py problem from week 2.
-        # TODO: 2 lines missing.
-        raise NotImplementedError("Insert your solution and remove this error.")
+        Qs = value_function2q_function(mdp, s, gamma, V)
+        pi[s] = max(Qs, key=Qs.get)
     return pi
 
 if __name__ == "__main__":

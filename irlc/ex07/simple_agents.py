@@ -22,19 +22,21 @@ class BasicAgent(Agent):
     def pi(self, s, t, info=None): 
         """ Since this is a bandit, s=None and can be ignored, while t refers to the time step in the current episode """
         if t == 0:
-            # At step 0 of episode. Re-initialize data structure. 
-            # TODO: 2 lines missing.
-            raise NotImplementedError("Insert your solution and remove this error.")
-        # compute action here 
-        # TODO: 1 lines missing.
-        raise NotImplementedError("Insert your solution and remove this error.")
+            # At step 0 of episode. Re-initialize data structure.
+            self.Q_hat = np.zeros(self.k)  # estimated Q-values
+            self.N = np.zeros(self.k, dtype=int)  # visit counts
+        # epsilon-greedy action selection
+        if np.random.rand() < self.epsilon:
+            return np.random.randint(self.k)
+        else:
+            return int(np.argmax(self.Q_hat))
 
     def train(self, s, a, r, sp, done=False, info_s=None, info_sp=None): 
         """ Since this is a bandit, done, s, sp, info_s, info_sp can all be ignored.
         From the input arguments you should only use a
         """
-        # TODO: 2 lines missing.
-        raise NotImplementedError("Implement function body")
+        self.N[a] += 1
+        self.Q_hat[a] += (r - self.Q_hat[a]) / self.N[a]  # incremental sample mean
 
     def __str__(self):
         return f"BasicAgent_{self.epsilon}"

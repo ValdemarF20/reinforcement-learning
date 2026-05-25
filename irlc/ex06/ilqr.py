@@ -27,29 +27,28 @@ def ilqr_basic(model : DiscreteControlModel, N, x0, us_init : list = None, n_ite
     u_bar = [np.random.uniform(-1, 1,(model.action_size,)) for _ in range(N)] if us_init is None else us_init
     x_bar = [x0] + [np.zeros(n, )] * N
     """
-    Initialize nominal trajectory xs, us using us and x0 (i.e. simulate system from x0 using action sequence us). 
+    Initialize nominal trajectory xs, us using us and x0 (i.e. simulate system from x0 using action sequence us).
     The simplest way to do this is to call forward_pass with all-zero sequence of control vector/matrix l, L.
     """
-    # TODO: 2 lines missing.
-    raise NotImplementedError("Initialize x_bar, u_bar here")
+    L0 = [np.zeros((m, n))] * N
+    l0 = [np.zeros(m)] * N
+    x_bar, u_bar = forward_pass(model, x_bar, u_bar, L=L0, l=l0, alpha=0)
     J_hist = []
     for i in range(n_iterations):
         """
         Compute derivatives around trajectory and cost estimate J of trajectory. To do so, use the get_derivatives
         function. Remember the functions will return lists of derivatives.
         """
-        # TODO: 2 lines missing.
-        raise NotImplementedError("Compute J and derivatives A_k = f_x, B_k = f_u, ....")
+        A, B, c, c_x, c_u, c_xx, c_ux, c_uu = get_derivatives(model, x_bar, u_bar)
+        J = cost_of_trajectory(model, x_bar, u_bar)
         """  Backward pass: Obtain feedback law matrices l, L using the backward_pass function.
         """
-        # TODO: 1 lines missing.
-        raise NotImplementedError("Compute L, l = .... here")
-        """ Forward pass: Given L, l matrices computed above, simulate new (optimal) action sequence. 
+        L, l = backward_pass(A, B, c_x, c_u, c_xx, c_ux, c_uu, mu=mu)
+        """ Forward pass: Given L, l matrices computed above, simulate new (optimal) action sequence.
         In the lecture slides, this is similar to how we compute u^*_k and x_k
         Once they are computed, iterate the iLQR algorithm by setting x_bar, u_bar equal to these values
         """
-        # TODO: 1 lines missing.
-        raise NotImplementedError("Compute x_bar, u_bar = ...")
+        x_bar, u_bar = forward_pass(model, x_bar, u_bar, L=L, l=l, alpha=alpha)
         if verbose:
             print(f"{i}> J={J:4g}, change in cost since last iteration {0 if i == 0 else J-J_hist[-1]:4g}")
         J_hist.append(J)
@@ -71,31 +70,31 @@ def ilqr_linesearch(model : DiscreteControlModel, N, x0, n_iterations, us_init=N
     n, m = model.state_size, model.action_size
     u_bar = [np.random.uniform(-1, 1, (model.action_size,)) for _ in range(N)] if us_init is None else us_init
     x_bar = [x0] + [np.zeros(n, )] * (N)
-    # Initialize nominal trajectory xs, us (same as in basic linesearch)
-    # TODO: 2 lines missing.
-    raise NotImplementedError("Copy-paste code from previous solution")
+    # Initialize nominal trajectory xs, us (same as in basic ilqr)
+    L0 = [np.zeros((m, n))] * N
+    l0 = [np.zeros(m)] * N
+    x_bar, u_bar = forward_pass(model, x_bar, u_bar, L=L0, l=l0, alpha=0)
     J_hist = []
 
     converged = False
     for i in range(n_iterations):
         alpha_was_accepted = False
         """ Step 1: Compute derivatives around trajectory and cost estimate of trajectory.
-        (copy-paste from basic implementation). In our implementation, J_bar = J_{u^star}(x_0) """
-        # TODO: 2 lines missing.
-        raise NotImplementedError("Obtain derivatives f_x, f_u, ... as well as cost of trajectory J_bar = ...")
+        In our implementation, J_bar = J_{u^star}(x_0) """
+        A, B, c, c_x, c_u, c_xx, c_ux, c_uu = get_derivatives(model, x_bar, u_bar)
+        J_prime = cost_of_trajectory(model, x_bar, u_bar)
         try:
             """
-            Step 2: Backward pass to obtain control law (l, L). Same as before so more copy-paste
+            Step 2: Backward pass to obtain control law (l, L).
             """
-            # TODO: 1 lines missing.
-            raise NotImplementedError("Obtain l, L = ... in backward pass")
+            L, l = backward_pass(A, B, c_x, c_u, c_xx, c_ux, c_uu, mu=mu)
             """
             Step 3: Forward pass and alpha scheduling.
-            Decrease alpha and check condition |J^new < J'|. Apply the regularization scheduling as needed. """
+            Decrease alpha and check condition J_new < J_prime. Apply regularization scheduling as needed.
+            """
             for alpha in alphas:
-                x_hat, u_hat = forward_pass(model, x_bar, u_bar, L=L, l=l, alpha=alpha) # Simulate trajectory using this alpha
-                # TODO: 1 lines missing.
-                raise NotImplementedError("Compute J_new = ... as the cost of trajectory x_hat, u_hat")
+                x_hat, u_hat = forward_pass(model, x_bar, u_bar, L=L, l=l, alpha=alpha)
+                J_new = cost_of_trajectory(model, x_hat, u_hat)
 
                 if J_new < J_prime:
                     """ Linesearch proposed trajectory accepted! Set current trajectory equal to x_hat, u_hat. """
@@ -104,23 +103,19 @@ def ilqr_linesearch(model : DiscreteControlModel, N, x0, n_iterations, us_init=N
 
                     J_prime = J_new
                     x_bar, u_bar = x_hat, u_hat
-                    '''
-                    The update was accepted and you should change the regularization term mu, 
-                     and the related scheduling term Delta.                   
-                    '''
-                    # TODO: 1 lines missing.
-                    raise NotImplementedError("Delta, mu = ...")
-                    alpha_was_accepted = True # accept this alpha
+                    # Decrease regularization on accepted step
+                    Delta = max(1 / Delta_0, Delta / Delta_0)
+                    mu = max(mu_min, mu * Delta)
+                    alpha_was_accepted = True  # accept this alpha
                     break
         except np.linalg.LinAlgError as e:
             # Matrix in dlqr was not positive-definite and this diverged
             warnings.warn(str(e))
 
         if not alpha_was_accepted:
-            ''' No alphas were accepted, which is not too hot. Regularization should change
-            '''
-            # TODO: 1 lines missing.
-            raise NotImplementedError("Delta, mu = ...")
+            # No alphas accepted: increase regularization
+            Delta = max(Delta_0, Delta * Delta_0)
+            mu = min(mu_max, mu * Delta) if mu_max else mu * Delta
 
             if mu_max and mu >= mu_max:
                 raise Exception("Exceeded max regularization term; we are stuffed.")
@@ -150,9 +145,12 @@ def backward_pass(A : list, B : list, c_x : list, c_u : list, c_xx : list, c_ux 
     :param mu: Regularization parameter for the LQR method
     :return: The control law :math:`L_k, \mathbf{l}_k` as two lists.
     """
-    Q, QN = c_xx[:-1], c_xx[-1] # An example.
-    # TODO: 4 lines missing.
-    raise NotImplementedError("Insert your solution and remove this error.")
+    Q, QN = c_xx[:-1], c_xx[-1]
+    R = c_uu[:-1]
+    H = c_ux[:-1]
+    q = c_x[:-1]
+    qN = c_x[-1]
+    r = c_u[:-1]
     # Define the inputs using the linearization inputs.
     (L, l), (V, v, vc) = LQR(A=A, B=B, R=R, Q=Q, QN=QN, H=H, q=q, qN=qN, r=r, mu=mu)
     return L, l
@@ -220,19 +218,15 @@ def get_derivatives(model : DiscreteControlModel, x_bar : list, u_bar : list):
     c_ux = [None] * (N + 1)
     c_uu = [None] * (N + 1)
     # Now update each entry correctly (i.e., ensure there are no None elements left).
-    # TODO: 4 lines missing.
-    raise NotImplementedError("Insert your solution and remove this error.")
-    """ Compute derivatives of the cost function. For terms not including u these should be of length N+1 
-    (because of gN!), for the other lists of length N
-    recall model.cost.c has output:
-        c[i], c_x[i], c_u[i], c_xx[i], c_ux[i], c_uu[i] = model.cost.c(x, u, i, compute_gradients=True)
-    """
-    # TODO: 2 lines missing.
-    raise NotImplementedError("Insert your solution and remove this error.")
+    for i in range(N):
+        A[i], B[i] = model.f_jacobian(x_bar[i], u_bar[i], i)
+    for i in range(N):
+        c[i], c_x[i], c_u[i], c_xx[i], c_ux[i], c_uu[i] = model.cost.c(x_bar[i], u_bar[i], k=i, compute_gradients=True)
     # Concatenate the derivatives associated with the last time point N.
     cN, c_xN, c_xxN = model.cost.cN(x_bar[N], compute_gradients=True)
-    # TODO: 3 lines missing.
-    raise NotImplementedError("Update c, c_x and c_xx with the terminal terms.")
+    c[N] = cN
+    c_x[N] = c_xN
+    c_xx[N] = c_xxN
     return A, B, c, c_x, c_u, c_xx, c_ux, c_uu
 
 def forward_pass(model : DiscreteControlModel, x_bar : list, u_bar : list, L : list, l : list, alpha=1.0):
@@ -261,15 +255,7 @@ def forward_pass(model : DiscreteControlModel, x_bar : list, u_bar : list, L : l
     x[0] = x_bar[0].copy()
 
     for i in range(N):
-        r""" Compute using (Her25, eq. (17.16))
-        u_{i} = ...
-        """
-        # TODO: 1 lines missing.
-        raise NotImplementedError("u_star[i] = ....")
-        """ Remember to compute 
-        x_{i+1} = f_k(x_i, u_i^*)        
-        here:
-        """
-        # TODO: 1 lines missing.
-        raise NotImplementedError("x[i+1] = ...")
+        # u_k = u_bar_k + alpha * l_k + L_k (x_k - x_bar_k)
+        u_star[i] = u_bar[i] + alpha * l[i] + L[i] @ (x[i] - x_bar[i])
+        x[i + 1] = model.f(x[i], u_star[i], i)
     return x, u_star

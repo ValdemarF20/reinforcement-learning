@@ -56,9 +56,12 @@ class DeepQAgent(TabularAgent):
         > [self.batch_size] x [...]]
         for instance 'a' will be of dimension [self.batch_size x 1]. 
         """
-        s,a,r,sp,done = self.memory.sample(self.batch_size) 
-        # TODO: 3 lines missing.
-        raise NotImplementedError("Insert your solution and remove this error.")
+        s, a, r, sp, done = self.memory.sample(self.batch_size)
+        # Build target: start from current Q-values, then overwrite the taken action's entry
+        target = self.Q(s)  # shape [batch_size, n_actions]
+        # Q-learning target: y = r + gamma * max_a' Q(s', a') for non-terminal, else just r
+        y = r.squeeze() + self.gamma * np.max(self.Q(sp), axis=1) * (1 - done.squeeze())
+        target[np.arange(len(a)), a.squeeze().astype(int)] = y
         self.Q.fit(s, target)
 
     def save(self, path): # allows us to save/load model
@@ -124,9 +127,7 @@ if __name__ == "__main__":
         env, agent = mk_cartpole()
         """
         saveload_model=True means it will store and load intermediate results
-        i.e. we can resume training later. It will not be very useful for cartpole, but necesary for e.g. 
-        the atari environment which can run for days
+        i.e. we can resume training later. It will not be very useful for 
+        cartpole, but it is useful for more complex environments.
         """
-        agent.load(ex)
-        train(env, agent, experiment_name=ex, num_episodes=num_episodes, resume_stats=True) # Resume stat collection from last checkpoint.
-        agent.save(ex)
+        train(env, agent, experiment_name=ex, num_episodes=num_episodes, max_runs=10, saveload_model=True)

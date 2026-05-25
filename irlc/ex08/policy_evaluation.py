@@ -40,8 +40,8 @@ def policy_evaluation(pi, mdp, gamma=.99, theta=0.00001):
             
             Don't be afraid to use a few more lines than I do.             
             """
-            # TODO: 2 lines missing.
-            raise NotImplementedError("Insert your solution and remove this error.")
+            v_ = v[s]  # store current value before update
+            v[s] = sum(pi[s][a] * q for a, q in value_function2q_function(mdp, s, gamma, v).items())
             r""" stop condition. v_ is the current value of the value function (see algorithm listing in (SB18)) which you need to update. """
             Delta = max(Delta, np.abs(v_ - v[s]))
     return v

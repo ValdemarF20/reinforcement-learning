@@ -43,8 +43,12 @@ def policy_iteration(mdp, gamma=1.0):
             using methods similar to those we saw in week2 of the DP problem.
             It is not a coincidence these algorithms are very similar -- if you think about it, the maximization step closely resembles the DP algorithm!
         """
-        # TODO: 6 lines missing.
-        raise NotImplementedError("Insert your solution and remove this error.")
+        for s in mdp.nonterminal_states:
+            old_action = pi[s]
+            Qs = value_function2q_function(mdp, s, gamma, V)
+            pi[s] = max(Qs, key=Qs.get)
+            if old_action != pi[s]:
+                policy_stable = False
     return pi, V
 
 if __name__ == "__main__":
@@ -58,6 +62,3 @@ if __name__ == "__main__":
     from irlc.ex08.small_gridworld import plot_value_function
     plot_value_function(mdp, v)
     plt.title("Value function using policy iteration to find optimal policy")
-    from irlc import savepdf
-    savepdf("policy_iteration")
-    plt.show()
