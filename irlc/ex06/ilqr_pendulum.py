@@ -15,9 +15,7 @@ def pendulum(use_linesearch):
     x0 = np.asarray(model.phi_x(model.continuous_model.x0_bound().low))
 
     n_iter = 200 # Use 200 iLQR iterations.
-    # xs, us, J_hist, L, l = ilqr(model, ...) Write a function call like this, but with the correct parametesr
-    # TODO: 1 lines missing.
-    raise NotImplementedError("Call iLQR here (see hint above).")
+    xs, us, J_hist, L, l = ilqr(model, N, x0, n_iter=n_iter, use_linesearch=use_linesearch)
 
     render = True
     if render:

@@ -20,7 +20,7 @@ layout = """
 # This is our first agent. Note it inherits from the Agent class. Use <ctrl>+click in pycharm to navigate to code definitions --
 # this is a very useful habbit when you work with other peoples code in general, and object-oriented code in particular.
 class GoAroundAgent(Agent):
-    def pi(self, x, k, info=None): 
+    def pi(self, x, k, info=None):
         """ Collect all dots in the maze in the smallest amount of time.
         This function should return an action, check the output of the code below to see what actions you can potentially
         return.
@@ -32,9 +32,14 @@ class GoAroundAgent(Agent):
             - Ignore the info dictionary; you can probably also ignore the state x.
             - The function should return a string (the actions are strings such as 'North')
         """
-        # TODO: 7 lines missing.
-        raise NotImplementedError("Implement function body")
-        return 'West'
+        if k < 7:
+            return 'South'
+        elif k < 14:
+            return 'East'
+        elif k < 21:
+            return 'North'
+        elif k < 28:
+            return 'West'
 
 if __name__ == "__main__":
     # Create an environment with the given layout. animate_movement is just for a nicer visualization.
@@ -50,7 +55,7 @@ if __name__ == "__main__":
     # The next two lines display two ways to get the available actions. The 'canonical' way using the
     # env.action_space, and a way particular to Pacman by using the s.A() function on the state.
     # You can read more about the functions in the state in project 1.
-    # print("Available actions at start:", env.action_space.actions) # This will list the available actions. 
+    # print("Available actions at start:", env.action_space.actions) # This will list the available actions.
     print("Alternative way of getting actions:", s.A())  # See also project description
 
     # Simulate the agent for one episode

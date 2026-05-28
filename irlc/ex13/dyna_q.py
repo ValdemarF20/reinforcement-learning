@@ -32,16 +32,14 @@ class DynaQ(QAgent):
         """
         Update the Q-function self.Q[s,a] as in regular Q-learning
         """
-        max_q = 0 if done else self.Q[sp, self.Q.get_optimal_action(sp, info_sp)]
-        self.Q[s, a] += self.alpha * (r + self.gamma * max_q - self.Q[s, a])
+        self.Q[s,a] += self.alpha * (r + (self.gamma * self.Q[sp, self.Q.get_optimal_action(sp, info_sp)] if not done else 0) - self.Q[s,a])
 
     def train(self, s, a, r, sp, done=False, info_s=None, info_sp=None):
         self.q_update(s,a,r,sp,done, info_s, info_sp)
         self.Model.append( (s,a, r,sp, done))
         for _ in range(self.n):
-            # Sample a random past transition from the model (replay buffer)
-            s_r, a_r, r_r, sp_r, done_r = self.Model[np.random.randint(len(self.Model))]
-            self.q_update(s_r, a_r, r_r, sp_r, done_r)
+            s_, a_, r_, sp_,done_ = self.Model[np.random.randint(len(self.Model))]
+            self.q_update(s_,a_,r_,sp_,done_, info_s, info_sp)
 
     def __str__(self):
         return f"DynaQ_{self.gamma}_{self.epsilon}_{self.alpha}_{self.n}"

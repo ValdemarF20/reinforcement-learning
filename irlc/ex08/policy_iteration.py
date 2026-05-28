@@ -28,8 +28,6 @@ def policy_iteration(mdp, gamma=1.0):
         # The main complication is that we need to transform our deterministic policy, pi[s], into a stochastic one pi[s][a].
         # It will be defined as:
         # >>>  pi_prob[s][a] = 1 if a = pi[s] and otherwise 0.
-        pi_prob = {s: {a: 1 if pi[s] == a else 0 for a in mdp.A(s)} for s in mdp.nonterminal_states}
-        V = policy_evaluation(pi_prob, mdp, gamma)
         V = policy_evaluation( {s: {pi[s]: 1} for s in mdp.nonterminal_states}, mdp, gamma)
         r""" Implement the method. This is step (3) in (SB18). """
         policy_stable = True   # Will be set to False if the policy pi changes
@@ -43,7 +41,7 @@ def policy_iteration(mdp, gamma=1.0):
             using methods similar to those we saw in week2 of the DP problem.
             It is not a coincidence these algorithms are very similar -- if you think about it, the maximization step closely resembles the DP algorithm!
         """
-        for s in mdp.nonterminal_states:
+        for s in [mdp.nonterminal_states[i] for i in np.random.permutation(len(mdp.nonterminal_states))]:
             old_action = pi[s]
             Qs = value_function2q_function(mdp, s, gamma, V)
             pi[s] = max(Qs, key=Qs.get)

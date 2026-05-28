@@ -30,9 +30,8 @@ class ChainMRP(MDP):
     def A(self, s): # 0: left, 1: right.
         return [0,1]
 
-    def Psr(self, s, a): 
-        # TODO: 1 lines missing.
-        raise NotImplementedError("Return the P(s', r | s,a) values here. See e.g. the gampler problem from previous week for help.")
+    def Psr(self, s, a):
+        sp = s + (2*a - 1)
         return {(sp, 1 if sp == self.max_states else 0): 1.0}
 
 class ChainEnvironment(MDP2GymEnv):

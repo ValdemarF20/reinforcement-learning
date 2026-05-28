@@ -17,14 +17,13 @@ class LinearSemiGradSarsaN(SarsaNAgent, LinearSemiGradSarsa):
     def pi(self, s, k, info=None):
         return SarsaNAgent.pi(self, s, k, info)
 
-    def _q(self, s, a): 
+    def _q(self, s, a):
         """
         Return Q(s,a) using the linear function approximator with weights self.w; i.e. use self.q
         """
-        # TODO: 1 lines missing.
-        raise NotImplementedError("Implement function body")
+        return self.Q(s, a)
 
-    def _upd_q(self, s, a, delta): 
+    def _upd_q(self, s, a, delta):
         """
         Update the weight-vector w using the appropriate rule (see exercise description). I.e. the update
         should be of the form
@@ -34,8 +33,7 @@ class LinearSemiGradSarsaN(SarsaNAgent, LinearSemiGradSarsa):
         where
            delta = (G^n - Q(s,a;w)
         """
-        # TODO: 1 lines missing.
-        raise NotImplementedError("Implement function body")
+        self.Q.w += self.alpha * delta * self.Q.x(s, a)
 
     def __str__(self):
         return f"LinSemiGradSarsaN{self.gamma}_{self.epsilon}_{self.alpha}_{self.n}"

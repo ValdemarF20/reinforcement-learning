@@ -21,14 +21,12 @@ class LinearizationAgent(Agent):
         """ Define A, B, d as the list of A/B matrices here. I.e. x[t+1] = A x[t] + B u[t] + d.
         You should use the function model.f to do this, which has build-in functionality to compute Jacobians which will be equal to A, B.
         It is important that you linearize around xbar, ubar. See (Her25, Section 17.1) for further details. """
-        Jx, Ju = self.model.f_jacobian(xbar, ubar)
-        d_vec = np.asarray(self.model.f(xbar, ubar)).flatten() - Jx @ np.asarray(xbar) - Ju @ np.asarray(ubar)
-        A_list = [Jx] * N
-        B_list = [Ju] * N
-        d_list = [d_vec] * N
+        xp = model.f(xbar, ubar, k=0)
+        A, B = model.f_jacobian(xbar, ubar, k=0)
+        d = xp - A @ xbar - B @ ubar
         Q, q, R = self.model.cost.Q, self.model.cost.q, self.model.cost.R
         """ Define self.L, self.l here as the (lists of) control matrices. """
-        (self.L, self.l), _ = LQR(A=A_list, B=B_list, d=d_list, Q=[Q]*N, R=[R]*N, q=[q]*N, QN=self.model.cost.QN, qN=self.model.cost.qN)
+        (self.L, self.l), (V, v, vc) = LQR(A=[A]*N, B=[B]*N, d=[d]*N, Q=[Q]*N, q=[q]*N, R=[self.model.cost.R]*N)
         super().__init__(env)
 
     def pi(self, x, k, info=None):

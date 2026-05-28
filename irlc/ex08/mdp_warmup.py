@@ -35,16 +35,15 @@ def value_function2q_function(mdp : MDP, s, gamma, v : dict) -> dict:
     :param v: The value function represented as a dictionary.
     :return: A dictionary representing :math:`Q` of the form ``{a1: Q(s,a1), a2: Q(s,a2), ..., an: Q(s,an)}``
     """
-    q_dict = {a: sum(p * (r + gamma * v[sp]) for (sp, r), p in mdp.Psr(s, a).items())
-              for a in mdp.A(s)}
+    q_dict = {a: sum([p*(r+ (gamma*v[sp] if not mdp.is_terminal(sp) else 0)) for (sp,r), p in mdp.Psr(s,a).items()]) for a in mdp.A(s)}
     return q_dict
 
 def expected_reward(mdp : MDP, s, a) -> float:
-    expected_reward = sum(p * r for (sp, r), p in mdp.Psr(s, a).items())
+    expected_reward = sum([r * p for (sp, r), p in mdp.Psr(s, a).items()])
     return expected_reward
 
 def q_function2value_function(policy : dict, Q : dict, s) -> float:
-    V_s = sum(policy[a] * Q[s, a] for a in policy)
+    V_s = sum([Q[s,a] * p for a, p in policy.items()])
     return V_s
 
 if __name__ == "__main__":

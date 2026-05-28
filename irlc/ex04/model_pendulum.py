@@ -129,12 +129,9 @@ if __name__ == "__main__":
     print(f"Pendulum with l={model.l}, m={model.m}") 
     x = [1,2]
     u = [0] # Input state/action.
-    # x_dot = ...
-    # TODO: 1 lines missing.
-    raise NotImplementedError("Compute dx/dt = f(x, u, t=0) here using the model-class defined above")
-    # x_dot_numpy = ...
-    # TODO: 1 lines missing.
-    raise NotImplementedError("Compute dx/dt = f(x, u, t=0) here using numpy-expressions you write manually.")
+    x_dot = model.f([1, 2], [0], t=0)
+    l, m, g = model.l, model.m, 9.82
+    x_dot_numpy = np.array([2, g/l * np.sin(1) + 1/(m*l**2) * 0])
 
     print(f"Using model-class: dx/dt = f(x, u, t) = {x_dot}")
     print(f"Using numpy: dx/dt = f(x, u, t) = {x_dot_numpy}") 

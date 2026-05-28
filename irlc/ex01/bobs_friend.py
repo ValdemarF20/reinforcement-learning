@@ -4,32 +4,36 @@ import numpy as np
 from gymnasium.spaces.discrete import Discrete
 from irlc.ex01.agent import Agent, train
 
-class BobFriendEnvironment(gymnasium.Env): 
+class BobFriendEnvironment(gymnasium.Env):
     def __init__(self, x0=20):
         self.x0 = x0
-        self.action_space = Discrete(2)     # Possible actions {0, 1} 
+        self.action_space = Discrete(2)     # Possible actions {0, 1}
 
     def reset(self):
-        # TODO: 1 lines missing.
-        raise NotImplementedError("Insert your solution and remove this error.")
+        self.s = self.x0
         return self.s, {}
 
     def step(self, a):
-        # TODO: 9 lines missing.
-        raise NotImplementedError("Insert your solution and remove this error.")
+        terminated = True
+        if a == 0:
+            s_next = self.s * 1.1
+        else:
+            if np.random.rand() < 1/4:
+                s_next = 0
+            else:
+                s_next = self.s + 12
+        reward = s_next - self.s
         return s_next, reward, terminated, False, {}
 
 class AlwaysAction_u0(Agent):
-    def pi(self, s, k, info=None):  
+    def pi(self, s, k, info=None):
         """This agent should always take action u=0."""
-        # TODO: 1 lines missing.
-        raise NotImplementedError("Implement function body")
+        return 0
 
 class AlwaysAction_u1(Agent):
-    def pi(self, s, k, info=None):  
+    def pi(self, s, k, info=None):
         """This agent should always take action u=1."""
-        # TODO: 1 lines missing.
-        raise NotImplementedError("Implement function body")
+        return 1
 
 if __name__ == "__main__":
     # Part A:

@@ -23,20 +23,16 @@ class BasicAgent(Agent):
         """ Since this is a bandit, s=None and can be ignored, while t refers to the time step in the current episode """
         if t == 0:
             # At step 0 of episode. Re-initialize data structure.
-            self.Q_hat = np.zeros(self.k)  # estimated Q-values
-            self.N = np.zeros(self.k, dtype=int)  # visit counts
-        # epsilon-greedy action selection
-        if np.random.rand() < self.epsilon:
-            return np.random.randint(self.k)
-        else:
-            return int(np.argmax(self.Q_hat))
+            self.Q = np.zeros((self.k,))
+            self.N = np.zeros((self.k,))
+        return np.random.randint(self.k) if np.random.rand() < self.epsilon else np.argmax(self.Q)
 
     def train(self, s, a, r, sp, done=False, info_s=None, info_sp=None): 
         """ Since this is a bandit, done, s, sp, info_s, info_sp can all be ignored.
         From the input arguments you should only use a
         """
-        self.N[a] += 1
-        self.Q_hat[a] += (r - self.Q_hat[a]) / self.N[a]  # incremental sample mean
+        self.N[a] = self.N[a] + 1
+        self.Q[a] = self.Q[a] + 1/self.N[a] * (r-self.Q[a])
 
     def __str__(self):
         return f"BasicAgent_{self.epsilon}"

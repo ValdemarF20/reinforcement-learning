@@ -18,25 +18,14 @@ class LinearSemiGradSarsa(LinearSemiGradQAgent):
         super().__init__(env, gamma, epsilon=epsilon, alpha=alpha, q_encoder=q_encoder)
 
     def pi(self, s, k, info=None): 
-        if k == 0:  # Beginning of episode - generate initial action
-            self.a = self.pi_eps(s, info)
-        return self.a
+        action = self.a if k > 0 else super().pi(s, k, info)
+        return action
 
     def train(self, s, a, r, sp, done=False, info_s=None, info_sp=None):
-        # Generate next action for sp
-        if not done:
-            ap = self.pi_eps(sp, info_sp)
-        else:
-            ap = None
-
-        # Compute temporal difference delta using next action
-        delta = r + (self.gamma * self.Q(sp, ap) if not done else 0) - self.Q(s, a)
-        # Update weights: w += alpha * delta * x(s,a)
-        self.Q.w += self.alpha * delta * self.Q.x(s, a)
-
-        # Store the next action for the next step
-        if not done:
-            self.a = ap
+        a_prime = super().pi(sp, k=0, info=info_sp)
+        delta = r + (0 if done else self.gamma * self.Q(sp, a_prime)) - self.Q(s, a)
+        self.Q.w += self.alpha * delta * self.Q.x(s,a)
+        self.a = a_prime
 
         if sum(np.abs(self.Q.w)) > 1e5: raise Exception("Weights diverged. Decrease alpha")
 

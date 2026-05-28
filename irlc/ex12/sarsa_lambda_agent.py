@@ -31,13 +31,13 @@ class SarsaLambdaAgent(SarsaAgent):
         self.e = defaultdict(float)
 
     def train(self, s, a, r, sp, done=False, info_s=None, info_sp=None):
-        a_prime = self.pi_eps(sp, info_sp)  # generate A' from S' (on-policy, same as Sarsa)
-        delta = r + (self.gamma * self.Q[sp, a_prime] if not done else 0) - self.Q[s, a]
-        self.e[s, a] += 1  # accumulate eligibility trace for current (s,a)
-        for (s, a), ee in list(self.e.items()):  # use list() to allow safe iteration
-            self.Q[s, a] += self.alpha * delta * ee
-            self.e[s, a] *= self.gamma * self.lamb  # decay trace
-        if done:  # Clear eligibility trace after each episode and update variables for Sarsa
+        a_prime = self.pi_eps(sp, info_sp) if not done else -1
+        delta = r + self.gamma * (self.Q[sp,a_prime] if not done else 0) - self.Q[s,a]
+        self.e[(s,a)] += 1
+        for (s, a), ee in list(self.e.items()):
+            self.Q[s,a] += self.alpha * delta * ee
+            self.e[(s,a)] = self.gamma * self.lamb * ee
+        if done:
             self.e.clear()
         else:
             self.a = a_prime
