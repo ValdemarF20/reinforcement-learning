@@ -57,11 +57,9 @@ class DeepQAgent(TabularAgent):
         for instance 'a' will be of dimension [self.batch_size x 1]. 
         """
         s, a, r, sp, done = self.memory.sample(self.batch_size)
-        # Build target: start from current Q-values, then overwrite the taken action's entry
-        target = self.Q(s)  # shape [batch_size, n_actions]
-        # Q-learning target: y = r + gamma * max_a' Q(s', a') for non-terminal, else just r
-        y = r.squeeze() + self.gamma * np.max(self.Q(sp), axis=1) * (1 - done.squeeze())
-        target[np.arange(len(a)), a.squeeze().astype(int)] = y
+        y = r[:,0] + self.gamma * np.max(self.Q(sp), axis=1) * (1-done)
+        target = self.Q(s)
+        target[range(len(a)), a] = y
         self.Q.fit(s, target)
 
     def save(self, path): # allows us to save/load model

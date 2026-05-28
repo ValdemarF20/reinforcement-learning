@@ -15,7 +15,8 @@ class ValueIterationAgent2(TabularAgent):
 
     def pi(self, s, k, info=None): 
         # TODO: 2 lines missing.
-        raise NotImplementedError("Implement function body")
+        q = value_function2q_function(self.mdp, s, self.gamma, self.v)
+        a = max(q, key=q.get)
         return self.random_pi(s) if np.random.rand() < self.epsilon else a
 
     @property
@@ -68,7 +69,7 @@ class PolicyEvaluationAgent2(TabularAgent):
 
     def pi(self, s,k, info=None):  
         # TODO: 1 lines missing.
-        raise NotImplementedError("Implement function body")
+        a, pa = zip(*self.policy[s].items())
         return np.random.choice(a, p=pa)
 
     def v2Q(self, s):  # used for rendering right now

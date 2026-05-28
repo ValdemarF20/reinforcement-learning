@@ -21,11 +21,10 @@ def get_MC_return_SA(episode, gamma, first_visit=True):
     G = 0
     returns = []
     for t in reversed(range(len(episode))):
-        s_t, a_t, r_t = episode[t]
-        G = r_t + gamma * G  # G_t = r_{t+1} + gamma * G_{t+1}
-        sa_t = (s_t, a_t)
+        G = gamma * G + episode[t][2]
+        sa_t = episode[t][:2]
         if sa_t not in sa[:t] or not first_visit:
-            returns.append((sa_t, G))
+            returns.append(sa_t + (G,))
     return returns
 
 class MCAgent(TabularAgent): 
@@ -56,16 +55,14 @@ class MCAgent(TabularAgent):
         """
         self.episode.append((s, a, r))
         if done:
-            for (sa, G) in get_MC_return_SA(self.episode, self.gamma, self.first_visit):
-                s_, a_ = sa
+            returns = get_MC_return_SA(self.episode, self.gamma, self.first_visit)
+            for s, a, G in returns:
                 if self.alpha is None:
-                    # Incremental mean update: Q <- Q + (G - Q) / N
-                    self.returns_sum_S[sa] += G
-                    self.returns_count_N[sa] += 1
-                    self.Q[s_, a_] = self.returns_sum_S[sa] / self.returns_count_N[sa]
+                    self.returns_sum_S[s, a] += G
+                    self.returns_count_N[s, a] += 1
+                    self.Q[s, a] = self.returns_sum_S[s, a] / self.returns_count_N[s, a]
                 else:
-                    # Constant step-size update
-                    self.Q[s_, a_] += self.alpha * (G - self.Q[s_, a_])
+                    self.Q[s, a] += self.alpha * (G - self.Q[s, a])
             self.episode = []
 
     def __str__(self):

@@ -17,11 +17,10 @@ class DeterministicInventoryDPModel(DPModel):
     def f(self, x, u, w, k): # Dynamics f_k(x,u,w)
         return max(0, min(2, x + u - w ))
 
-    def Pw(self, x, u, k): # Distribution over random disturbances 
+    def Pw(self, x, u, k): # Distribution over random disturbances
         """In this problem we assume that p(w=k+1) = 1.
         Return this as a dictionary of the form: {w : p(w)}."""
-        # TODO: 1 lines missing.
-        raise NotImplementedError("Implement function body")
+        return {k + 1: 1}
 
     def gN(self, x):
         return 0

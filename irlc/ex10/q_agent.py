@@ -41,8 +41,9 @@ class QAgent(TabularAgent):
 
         You may want to look at self.Q.get_optimal_action(state) to compute a = argmax_a Q[s,a].
         """
-        max_q = 0 if done else self.Q[sp, self.Q.get_optimal_action(sp, info_sp)]
-        self.Q[s, a] += self.alpha * (r + self.gamma * max_q - self.Q[s, a])
+        if not done:
+            a_star = self.Q.get_optimal_action(sp, info_sp)
+        self.Q[s,a] += self.alpha * (r + self.gamma * (0 if done else self.Q[sp,a_star]) - self.Q[s,a])
 
     def __str__(self):
         return f"QLearner_{self.gamma}_{self.epsilon}_{self.alpha}"

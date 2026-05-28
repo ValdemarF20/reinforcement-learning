@@ -58,7 +58,7 @@ class BanditEnvironment(Env):
             - s - a state, for instance 0
             - info - the info dictionary, for instance {}
         """
-        raise NotImplementedError("Implement the reset method") 
+        return 0, {}
 
     def bandit_step(self, a): 
         r"""This helper function simplify the definition of the environments ``step``-function.
@@ -138,7 +138,7 @@ class StationaryBandit(BanditEnvironment):
          Remember it is 0 if the optimal action is selected.
          """
         reward = self.q_star[a] + np.random.randn()
-        gab = np.max(self.q_star) - self.q_star[a]
+        gab = self.q_star[self.optimal_action] - self.q_star[a]
         return reward, gab
 
     def __str__(self):
